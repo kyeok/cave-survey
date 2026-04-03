@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAVE Survey — AI Ops Level 진단</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+    background: #1E1E2E;
+    color: #fff;
+    min-height: 100vh;
+  }
+  a { color: #00D4FF; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #16161E;
+    border-bottom: 1px solid #2A2A4A;
+  }
+  .nav-logo { font-size: 1.1rem; font-weight: 700; color: #00D4FF; }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; font-size: 0.9rem; }
+  .nav-user { color: #AAAABB; font-size: 0.85rem; }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .container.wide { max-width: 1000px; }
+
+  .card {
+    background: #2A2A4A;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .card-accent {
+    background: #333355;
+    border-left: 4px solid #00D4FF;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-cyan { background: #00D4FF; color: #1E1E2E; }
+  .btn-yellow { background: #FFD700; color: #1E1E2E; }
+  .btn-green { background: #00E676; color: #1E1E2E; }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid #00D4FF;
+    color: #00D4FF;
+  }
+  .btn-large { padding: 1rem 3rem; font-size: 1.1rem; }
+
+  .section-label { color: #FFD700; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .page-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .page-subtitle { color: #AAAABB; font-size: 0.95rem; margin-bottom: 2rem; }
+  .divider { height: 3px; background: #00B4D8; border-radius: 2px; margin: 0.5rem 0 1.5rem; }
+
+  .text-cyan { color: #00D4FF; }
+  .text-green { color: #00E676; }
+  .text-yellow { color: #FFD700; }
+  .text-orange { color: #FFA500; }
+  .text-gray { color: #AAAABB; }
+  .text-purple { color: #BB86FC; }
+
+  @media (max-width: 600px) {
+    .container { padding: 1rem; }
+    .nav { padding: 0.8rem 1rem; }
+    .page-title { font-size: 1.4rem; }
+  }
+</style>
+{% block extra_css %}{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-logo">🔬 CAVE Survey</a>
+    <div class="nav-links">
+      <a href="/guide">AI Ops Level이란?</a>
+      {% if user %}
+        <span class="nav-user">{{ user.nickname }}님</span>
+        <a href="/logout" style="color: #AAAABB;">로그아웃</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% block content %}{% endblock %}
+</body>
+</html>

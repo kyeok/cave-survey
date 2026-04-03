@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAVE Survey — AI Ops Pattern 가이드</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Pretendard', -apple-system, sans-serif; background: #faf9f7; color: #1a1a1a; min-height: 100vh; }
+
+  .nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 24px; border-bottom: 1px solid #e8e6e3;
+  }
+  .nav-logo { font-size: 15px; font-weight: 700; color: #6366f1; text-decoration: none; }
+  .nav-links { display: flex; gap: 16px; align-items: center; font-size: 13px; }
+  .nav-links a { color: #6b7280; text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: #1a1a1a; }
+  .nav-user { color: #9ca3af; }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 40px 24px 80px; }
+  .page-label { font-size: 13px; font-weight: 600; color: #6366f1; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .page-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .page-desc { font-size: 15px; color: #6b7280; line-height: 1.6; margin-bottom: 32px; }
+  .divider { height: 2px; background: #e8e6e3; border-radius: 1px; margin-bottom: 32px; }
+
+  .card {
+    background: #fff; border: 1px solid #e8e6e3; border-radius: 12px;
+    padding: 24px; margin-bottom: 16px;
+  }
+  .card-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+
+  /* Level cards */
+  .level-card { position: relative; padding-left: 20px; }
+  .level-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 2px;
+  }
+  .level-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .level-num { font-size: 28px; font-weight: 800; }
+  .level-name { font-size: 18px; font-weight: 700; }
+  .level-desc { font-size: 14px; color: #6b7280; margin-bottom: 6px; }
+  .level-key { font-size: 13px; font-weight: 600; color: #6366f1; margin-bottom: 12px; }
+  .level-role { font-size: 13px; color: #374151; margin-bottom: 12px; padding: 8px 12px; background: #f0f0ff; border-radius: 8px; }
+  .level-role strong { color: #6366f1; }
+
+  .examples { padding: 12px 16px; background: #faf9f7; border-radius: 8px; margin-bottom: 12px; }
+  .examples p { font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 6px; }
+  .examples ul { font-size: 14px; color: #374151; line-height: 1.8; padding-left: 20px; }
+
+  .quote { font-size: 14px; font-style: italic; color: #6366f1; }
+
+  .warning { padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.6; }
+  .warning-amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .warning-purple { background: #faf5ff; border: 1px solid #e9d5ff; color: #6b21a8; }
+
+  /* Analogy */
+  .analogy-card { background: #f0f0ff; border: 1px solid #e0e0ff; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .analogy-title { font-size: 16px; font-weight: 700; color: #6366f1; margin-bottom: 12px; }
+  .analogy-grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px 16px; font-size: 14px; line-height: 2; }
+  .analogy-grid .ag-level { font-weight: 700; }
+  .analogy-grid .ag-desc { color: #6b7280; }
+
+  /* 3 Axes */
+  .axes-card { background: #fff; border: 1px solid #e8e6e3; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  .axis-item { padding: 16px; border-radius: 10px; margin-bottom: 10px; }
+  .axis-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .axis-item p { font-size: 13px; color: #6b7280; line-height: 1.6; }
+  .ax-ce { background: #fffbeb; border: 1px solid #fde68a; } .ax-ce h4 { color: #b45309; }
+  .ax-cw { background: #ecfeff; border: 1px solid #a5f3fc; } .ax-cw h4 { color: #0e7490; }
+  .ax-ag { background: #fdf2f8; border: 1px solid #fbcfe8; } .ax-ag h4 { color: #db2777; }
+
+  /* Autonomy dimensions */
+  .dim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .dim-item { padding: 12px; background: #faf9f7; border-radius: 8px; border: 1px solid #e8e6e3; }
+  .dim-item h5 { font-size: 13px; font-weight: 700; color: #6366f1; margin-bottom: 4px; }
+  .dim-item p { font-size: 12px; color: #6b7280; line-height: 1.5; }
+
+  /* Insight */
+  .insight-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 24px; margin: 24px 0; }
+  .insight-title { font-size: 16px; font-weight: 700; color: #15803d; margin-bottom: 12px; }
+  .insight-text { font-size: 15px; line-height: 1.8; }
+  .insight-cols { display: flex; gap: 12px; margin-top: 12px; }
+  .insight-col { flex: 1; padding: 16px; border-radius: 10px; text-align: center; }
+  .insight-col-a { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .insight-col-b { background: #fff7ed; border: 1px solid #fed7aa; }
+  .insight-col h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .insight-col p { font-size: 13px; color: #6b7280; }
+  .insight-col .highlight { font-size: 13px; margin-top: 6px; font-weight: 600; }
+  .insight-col-a h4 { color: #2563eb; } .insight-col-a .highlight { color: #15803d; }
+  .insight-col-b h4 { color: #ea580c; } .insight-col-b .highlight { color: #ea580c; }
+
+  /* Evidence */
+  .evidence-card { background: #fff; border: 1px solid #e8e6e3; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .ev-item { padding: 8px 0; border-bottom: 1px solid #f0efec; font-size: 13px; line-height: 1.6; }
+  .ev-item:last-child { border-bottom: none; }
+  .ev-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
+  .ev-strong { background: #dcfce7; color: #15803d; }
+
+  /* Hypothesis */
+  .hyp-flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .hyp-node { padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; }
+  .hn-1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .hn-2 { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .hn-3 { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .hn-4 { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+  .hyp-arrow { color: #9ca3af; font-size: 16px; }
+
+  .actions { text-align: center; padding-top: 24px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px; border-radius: 10px; font-size: 15px; font-weight: 600;
+    text-decoration: none; font-family: inherit; border: none; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-primary { background: #6366f1; color: #fff; }
+  .btn-primary:hover { background: #4f46e5; }
+  .btn svg { width: 16px; height: 16px; }
+
+  .l-gray::before { background: #9ca3af; } .l-gray .level-num { color: #9ca3af; }
+  .l-blue::before { background: #60a5fa; } .l-blue .level-num { color: #60a5fa; }
+  .l-indigo::before { background: #6366f1; } .l-indigo .level-num { color: #6366f1; }
+  .l-emerald::before { background: #10b981; } .l-emerald .level-num { color: #10b981; }
+  .l-amber::before { background: #f59e0b; } .l-amber .level-num { color: #f59e0b; }
+
+  @media (max-width: 500px) {
+    .insight-cols { flex-direction: column; }
+    .dim-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">🔬 CAVE Survey</a>
+  <div class="nav-links">
+    <a href="/guide" style="color:#6366f1; font-weight:600;">AI Ops Pattern이란?</a>
+    {% if user %}
+      <span class="nav-user">{{ user.nickname }}님</span>
+      <a href="/logout">로그아웃</a>
+    {% else %}
+      <a href="/login">로그인</a>
+    {% endif %}
+  </div>
+</nav>
+
+<div class="container">
+  <p class="page-label">가이드</p>
+  <h1 class="page-title">AI Ops Pattern이란?</h1>
+  <p class="page-desc">
+    "우리 조직에서 AI가 관리 업무에 얼마나 깊이 관여하고 있는가"를 나타내는 단계입니다.<br>
+    자율주행의 SAE 레벨에서 영감을 받아, 리더의 AI 위임 수준을 P0~P4로 정의합니다.
+  </p>
+  <div class="divider"></div>
+
+  <!-- 이론적 배경 -->
+  <div class="card">
+    <p class="card-title">📚 이론적 배경</p>
+    <p style="font-size:14px; color:#6b7280; line-height:1.8; margin-bottom:12px;">
+      AI Ops Pattern은 세 가지 이론적 축을 결합합니다:
+    </p>
+    <ul style="font-size:14px; color:#374151; line-height:2; padding-left:20px;">
+      <li><strong>Sheridan & Verplank</strong>의 자동화 수준 분류 — 인간-기계 상호작용의 위임 단계</li>
+      <li><strong>Parasuraman et al.</strong>의 인간-자동화 상호작용 모델 — 정보 수집→분석→결정→실행 4단계</li>
+      <li><strong>Bainbridge</strong>의 "Ironies of Automation" — 자동화가 오히려 인간의 역할을 복잡하게 만드는 역설</li>
+    </ul>
+  </div>
+
+  <!-- 자율주행 비유 -->
+  <div class="analogy-card">
+    <p class="analogy-title">🚗 자율주행 레벨을 생각해보세요</p>
+    <div class="analogy-grid">
+      <span class="ag-level" style="color:#9ca3af;">P0</span><span>수동 운전</span><span class="ag-desc">모든 것을 사람이</span>
+      <span class="ag-level" style="color:#60a5fa;">P1</span><span>크루즈 컨트롤</span><span class="ag-desc">속도만 AI가</span>
+      <span class="ag-level" style="color:#6366f1;">P2</span><span>차선 유지</span><span class="ag-desc">운전 보조, 사람이 핸들</span>
+      <span class="ag-level" style="color:#10b981;">P3</span><span>조건부 자율</span><span class="ag-desc">AI가 운전, 사람은 대기</span>
+      <span class="ag-level" style="color:#f59e0b;">P4</span><span>완전 자율</span><span class="ag-desc">목적지만 말하면 됨</span>
+    </div>
+    <p style="font-size:13px; color:#6b7280; margin-top:12px;">
+      AI Ops도 같은 구조입니다. <strong style="color:#1a1a1a;">"조직 관리"에서 AI가 어디까지 하고 있는가?</strong>
+    </p>
+  </div>
+
+  <!-- P0 -->
+  <div class="card level-card l-gray">
+    <div class="level-header"><span class="level-num">P0</span><span class="level-name">미사용 (No AI)</span></div>
+    <p class="level-desc">AI를 업무에 사용하지 않는 상태</p>
+    <div class="level-role"><strong>리더의 역할:</strong> 모든 의사결정과 실행을 리더/구성원이 직접 수행</div>
+    <div class="examples">
+      <p>이런 모습:</p>
+      <ul>
+        <li>회의록을 사람이 직접 작성</li>
+        <li>일정 관리를 엑셀이나 수기로</li>
+        <li>보고서를 처음부터 끝까지 사람이</li>
+      </ul>
+    </div>
+    <p class="quote">💬 "우리 팀은 아직 AI를 안 써요"</p>
+  </div>
+
+  <!-- P1 -->
+  <div class="card level-card l-blue">
+    <div class="level-header"><span class="level-num">P1</span><span class="level-name">AI 보조 (Assisted)</span></div>
+    <p class="level-desc">사람이 주도하고, AI는 단순 보조</p>
+    <p class="level-key">핵심: 내가 AI에게 시키고, 결과를 내가 판단</p>
+    <div class="level-role"><strong>리더의 역할:</strong> AI가 정보 제공·초안 생성. 리더가 모든 최종 판단을 수행</div>
+    <div class="examples">
+      <p>이런 모습:</p>
+      <ul>
+        <li>ChatGPT에게 "이 회의 내용 정리해줘"</li>
+        <li>Copilot이 코드 제안하면 내가 수락/거절</li>
+        <li>AI에게 물어보고 참고만 함</li>
+      </ul>
+    </div>
+    <p class="quote">💬 "AI를 검색엔진처럼 쓰고 있어요"</p>
+  </div>
+
+  <!-- P2 -->
+  <div class="card level-card l-indigo">
+    <div class="level-header"><span class="level-num">P2</span><span class="level-name">AI 협업 (Augmented)</span></div>
+    <p class="level-desc">AI가 초안을 만들고, 사람이 검토/수정</p>
+    <p class="level-key">핵심: AI가 먼저 해오고, 내가 고친다</p>
+    <div class="level-role"><strong>리더의 역할:</strong> AI가 분석·추천·초안 작성. 리더는 검증·승인에 집중</div>
+    <div class="examples">
+      <p>이런 모습:</p>
+      <ul>
+        <li>AI가 주간 보고서 초안 작성 → 관리자가 검토 후 배포</li>
+        <li>AI가 회의록 정리 → 사람이 확인하고 공유</li>
+        <li>AI가 일정 제안 → 사람이 조정</li>
+      </ul>
+    </div>
+    <p class="quote">💬 "AI가 80% 해오면 내가 20% 다듬어요"</p>
+  </div>
+
+  <!-- P3 -->
+  <div class="card level-card l-emerald">
+    <div class="level-header"><span class="level-num">P3</span><span class="level-name">AI 위임 (Delegated)</span></div>
+    <p class="level-desc">AI가 독립적으로 수행, 사람은 예외만 처리</p>
+    <p class="level-key">핵심: AI가 알아서 하고, 문제 있을 때만 사람이 개입</p>
+    <div class="level-role"><strong>리더의 역할:</strong> 정의된 범위 내에서 AI가 자율 실행. 리더는 예외 처리·경계 설정</div>
+    <div class="examples">
+      <p>이런 모습:</p>
+      <ul>
+        <li>AI 에이전트가 일정 관리, 이상 시에만 알림</li>
+        <li>AI가 자동으로 진행 상황 추적하고 리마인더 발송</li>
+        <li>AI가 Slack에서 알아서 공지 작성</li>
+      </ul>
+    </div>
+    <div class="warning warning-amber">
+      ⚠️ 이 단계부터 주의: AI가 하는 일이 <strong>투명하면</strong> 자율성 강화, <strong>불투명하면</strong> 감시처럼 느껴질 수 있음
+    </div>
+    <p class="quote">💬 "따로 신경 안 써도 AI가 돌아가고 있어요"</p>
+  </div>
+
+  <!-- P4 -->
+  <div class="card level-card l-amber">
+    <div class="level-header"><span class="level-num">P4</span><span class="level-name">AI 자율 운영 (Autonomous)</span></div>
+    <p class="level-desc">AI가 자율적으로 관리 기능 수행</p>
+    <p class="level-key">핵심: 사람 관리자 없이도 팀이 운영됨</p>
+    <div class="level-role"><strong>리더의 역할:</strong> AI가 독립적으로 운영. 리더는 목표 설정·윤리적 감독에 집중</div>
+    <div class="examples">
+      <p>이런 모습:</p>
+      <ul>
+        <li>AI가 KPI 추적 + 평가 + 자원 배분까지 자동</li>
+        <li>AI가 팀원 업무 배분을 자체 판단</li>
+        <li>AI가 프로젝트 일정을 자동 조정</li>
+      </ul>
+    </div>
+    <div class="warning warning-purple">
+      아직 대부분의 조직에서는 이 단계에 도달하지 않았습니다. 실험적 영역입니다.
+    </div>
+    <p class="quote">💬 "관리자가 없어도 프로젝트가 굴러가요"</p>
+  </div>
+
+  <!-- 3축 구조 -->
+  <div class="axes-card">
+    <p class="card-title">📐 설문의 3축 구조</p>
+    <p style="font-size:14px; color:#6b7280; line-height:1.6; margin-bottom:16px;">
+      이 설문은 AI Ops Pattern을 3가지 축으로 측정합니다.
+    </p>
+    <div class="axis-item ax-ce">
+      <h4>축 1. Context Engineering (맥락 구성)</h4>
+      <p>AI로 정보를 수집·정리·연결·공유하여 팀의 판단 품질을 높이는 활동.<br>
+        일정 관리, 업무 추적, 회의록, 공지, 지식 관리, 데이터 분석 6개 영역을 측정합니다.</p>
+    </div>
+    <div class="axis-item ax-cw">
+      <h4>축 2. Core Work (본업 수행)</h4>
+      <p>개발·기획·디자인·연구·데이터분석 등 전문 직무를 AI와 함께 수행하는 활동.<br>
+        산출물 생산, 품질 검증, 우선순위 의사결정 3개 영역을 측정합니다.</p>
+    </div>
+    <div class="axis-item ax-ag">
+      <h4>축 3. Agency Direction (주체 방향)</h4>
+      <p>같은 AI Ops Pattern이라도 "누가 주도했느냐"에 따라 자율성 체감이 달라집니다.<br>
+        <strong>Bottom-up</strong>(구성원 자발) → 자율성↑ / <strong>Top-down</strong>(조직 시스템) → 감시 체감 가능</p>
+    </div>
+  </div>
+
+  <!-- 자율조직 4차원 -->
+  <div class="card">
+    <p class="card-title">🏛️ 자율조직: 4개 차원</p>
+    <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">
+      Morgeson & Humphrey (2006) WDQ + Deci & Ryan SDT에 기반한 자율성 측정
+    </p>
+    <div class="dim-grid">
+      <div class="dim-item">
+        <h5>의사결정 분산</h5>
+        <p>관리자 승인 없이 독립적으로 결정할 수 있는 업무의 범위와 빈도</p>
+      </div>
+      <div class="dim-item">
+        <h5>자율적 실행</h5>
+        <p>업무의 방식, 순서, 일정을 스스로 결정할 수 있는 정도</p>
+      </div>
+      <div class="dim-item">
+        <h5>정보 투명성</h5>
+        <p>AI가 제공하는 정보나 추천의 근거를 납득할 수 있는 정도</p>
+      </div>
+      <div class="dim-item">
+        <h5>구성원 인식</h5>
+        <p>AI 도입이 자율성을 강화했는지, 감시를 강화했는지에 대한 주관적 인식</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 핵심 가설 -->
+  <div class="card">
+    <p class="card-title">🔬 CAVE 연구의 핵심 가설</p>
+    <p style="font-size:14px; color:#374151; line-height:1.8; margin-bottom:16px; padding:12px 16px; background:#f0f0ff; border-radius:8px; border-left:3px solid #6366f1;">
+      "AI가 관리 기능을 자동화하면, 조직은 더 자율적으로 되는가?"<br>
+      <span style="font-size:13px; color:#6b7280;">부제: 리더가 정보를 더 투명하게 제공할수록, 구성원의 자율성은 높아진다.</span>
+    </p>
+
+    <p style="font-size:13px; color:#6b7280; margin-bottom:8px;">투명성→자율성 경로:</p>
+    <div class="hyp-flow">
+      <div class="hyp-node hn-1">리더의<br>정보 공유 의지</div>
+      <div class="hyp-arrow">→</div>
+      <div class="hyp-node hn-2">AI(CE)가<br>맥락을 구조화</div>
+      <div class="hyp-arrow">→</div>
+      <div class="hyp-node hn-3">구성원이<br>정보에 접근</div>
+      <div class="hyp-arrow">→</div>
+      <div class="hyp-node hn-4">자율적<br>의사결정</div>
+    </div>
+
+    <p style="font-size:14px; line-height:1.8; margin-top:12px;">
+      핵심 가설: <strong>"AI Ops는 리더의 강점과 약점을 모두 증폭시킨다."</strong><br>
+      <span style="font-size:13px; color:#6b7280;">AI 도입이 리더십 역량에 미치는 영향은 선형적이지 않으며, 리더의 기존 스타일에 따라 차별적으로 작용할 것으로 예상합니다.</span>
+    </p>
+  </div>
+
+  <!-- 왜 측정하나 -->
+  <div class="insight-card">
+    <p class="insight-title">왜 이걸 측정하나요?</p>
+    <p class="insight-text">같은 "AI를 쓴다"라도 P1과 P3는 <strong>완전히 다른 경험</strong>입니다.</p>
+    <div class="insight-cols">
+      <div class="insight-col insight-col-a">
+        <h4>P1 ~ P2</h4>
+        <p>"내가 AI를 쓴다"</p>
+        <p class="highlight">→ 자율성이 높아지는 경향</p>
+      </div>
+      <div class="insight-col insight-col-b">
+        <h4>P3 ~ P4</h4>
+        <p>"AI가 나를 관리한다"</p>
+        <p class="highlight">→ 감시로 느껴질 위험<br>(투명성에 따라 달라짐)</p>
+      </div>
+    </div>
+    <p style="font-size:14px; line-height:1.8; margin-top:16px;">
+      CAVE 연구는 5명이 각각 다른 Level의 조직에서 실험하고,<br>
+      <strong>"어떤 Level에서 자율성이 강화되고, 어떤 Level에서 감시가 되는가"</strong>를 비교합니다.
+    </p>
+  </div>
+
+  <!-- 근거 기반 설계 -->
+  <div class="evidence-card">
+    <p class="card-title">📊 근거 기반 설계 (EBP)</p>
+    <p style="font-size:13px; color:#6b7280; margin-bottom:12px;">이 연구 설계에 반영된 핵심 근거:</p>
+    <div class="ev-item"><span class="ev-tag ev-strong">Strong</span> Human+AI 시너지는 과업 유형에 따라 다름 — Nature 2024 메타분석</div>
+    <div class="ev-item"><span class="ev-tag ev-strong">Strong</span> AI 생산성 효과는 하위 역량자에 집중 (Equalizing Effect) — Brynjolfsson RCT</div>
+    <div class="ev-item"><span class="ev-tag ev-strong">Strong</span> 관리자 업무 43% AI 영향, core work로 이동 — HBS 50,032명</div>
+    <div class="ev-item"><span class="ev-tag ev-strong">Strong</span> 알고리즘 매니지먼트: 투명성이 자율성/감시 인식 결정 — JOB 2025 (465편)</div>
+    <div class="ev-item"><span class="ev-tag ev-strong">Strong</span> 고성과 AI 사용자 = "모델과 함께 사고" — UT Austin 140만건</div>
+    <div class="ev-item"><span class="ev-tag ev-strong">Strong</span> 5시간+ hands-on 교육 시 AI 사용률 급등 — BCG 2025</div>
+  </div>
+
+  <!-- 연구 로드맵 -->
+  <div class="card">
+    <p class="card-title">🗺️ 연구 로드맵</p>
+    <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:140px; padding:16px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; text-align:center;">
+        <p style="font-size:12px; color:#6b7280;">4월 1~2주</p>
+        <p style="font-size:15px; font-weight:700; color:#2563eb;">Phase 1</p>
+        <p style="font-size:12px; color:#6b7280;">기준선 측정</p>
+        <p style="font-size:11px; color:#9ca3af; margin-top:4px;">공통 설문 Before</p>
+      </div>
+      <div style="flex:1; min-width:140px; padding:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; text-align:center;">
+        <p style="font-size:12px; color:#6b7280;">4월 3주 ~ 5월 2주</p>
+        <p style="font-size:15px; font-weight:700; color:#15803d;">Phase 2</p>
+        <p style="font-size:12px; color:#6b7280;">실험 + 저널링</p>
+        <p style="font-size:11px; color:#9ca3af; margin-top:4px;">5명 × 개별 실험</p>
+      </div>
+      <div style="flex:1; min-width:140px; padding:16px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; text-align:center;">
+        <p style="font-size:12px; color:#6b7280;">5월 3~4주</p>
+        <p style="font-size:15px; font-weight:700; color:#b45309;">Phase 3</p>
+        <p style="font-size:12px; color:#6b7280;">패턴 도출 + 종합</p>
+        <p style="font-size:11px; color:#9ca3af; margin-top:4px;">공통 설문 After + 비교</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/survey" class="btn btn-primary">
+      설문 시작하기
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</div>
+</body>
+</html>

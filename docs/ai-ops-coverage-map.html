@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ops 커버리지 맵 — CE / CW / Agency 3축 구조</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: #faf9f7; color: #1a1a1a; min-height: 100vh; padding: 40px 20px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 700; color: #6366f1; margin-bottom: 8px; }
+  h2 { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 48px 0 16px; }
+  .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 32px; line-height: 1.6; }
+  .section-desc { font-size: 13px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
+
+  .stats-bar { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat-card {
+    background: #fff; border: 1px solid #e8e6e3;
+    border-radius: 12px; padding: 14px 18px; flex: 1; min-width: 120px;
+  }
+  .stat-num { font-size: 26px; font-weight: 700; }
+  .stat-label { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+  .cov-wrap { margin-bottom: 36px; }
+  .cov-row { margin-bottom: 14px; }
+  .cov-label { font-size: 12px; color: #6b7280; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .cov-bar { height: 10px; background: #f0efec; border-radius: 5px; overflow: hidden; display: flex; }
+  .f-ce { background: #f59e0b; } .f-cw { background: #06b6d4; }
+  .f-miss { background: #ea580c; } .f-front { background: #8b5cf6; }
+
+  .filters { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .filter-btn {
+    font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 20px;
+    border: 1px solid #e5e3e0; background: #fff;
+    color: #6b7280; cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn:hover { background: #f0efec; }
+  .filter-btn.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+
+  .cat-group { margin-bottom: 32px; }
+  .cat-header {
+    font-size: 15px; font-weight: 600; color: #374151; margin-bottom: 14px;
+    padding-bottom: 8px; border-bottom: 1px solid #e8e6e3;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+  .card {
+    background: #fff; border: 1px solid #e8e6e3;
+    border-radius: 12px; padding: 16px; transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 4px 0 0 4px; }
+  .card.ce::before { background: #f59e0b; }
+  .card.cw::before { background: #06b6d4; }
+  .card.miss::before { background: #ea580c; }
+  .card.front::before { background: #8b5cf6; }
+
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 8px; }
+  .card-name { font-size: 14px; font-weight: 600; }
+  .card.ce .card-name { color: #b45309; }
+  .card.cw .card-name { color: #0e7490; }
+  .card.miss .card-name { color: #c2410c; }
+  .card.front .card-name { color: #7c3aed; }
+
+  .badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+  .b-ce { background: #fef3c7; color: #b45309; }
+  .b-cw { background: #cffafe; color: #0e7490; }
+  .b-miss { background: #ffedd5; color: #c2410c; }
+  .b-front { background: #ede9fe; color: #7c3aed; }
+
+  .card-desc { font-size: 12px; color: #6b7280; line-height: 1.5; margin-bottom: 8px; }
+  .card-examples { font-size: 11px; color: #9ca3af; line-height: 1.6; }
+  .card-examples span { display: block; }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .chip { background: #f0efec; border-radius: 3px; padding: 2px 6px; font-size: 10px; color: #6b7280; }
+  .hidden { display: none !important; }
+
+  .axis-section { margin: 48px 0; }
+  .axis-diagram {
+    position: relative; width: 100%; max-width: 800px; margin: 0 auto;
+    background: #fff; border: 1px solid #e8e6e3;
+    border-radius: 16px; padding: 40px 32px 32px;
+  }
+  .axis-label-y {
+    position: absolute; left: 8px; top: 50%; transform: translateY(-50%) rotate(-90deg);
+    font-size: 12px; color: #0e7490; font-weight: 600; white-space: nowrap;
+  }
+  .axis-label-x {
+    text-align: right; font-size: 12px; color: #b45309; font-weight: 600; margin-top: 12px;
+  }
+  .axis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-left: 20px; }
+  .quad { padding: 24px 20px; border-radius: 10px; text-align: center; }
+  .quad h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .quad p { font-size: 11px; line-height: 1.6; color: #6b7280; }
+  .quad .parts { margin-top: 10px; font-size: 10px; opacity: 0.7; }
+  .q-tl { background: #fffbeb; border: 1px solid #fde68a; } .q-tl h4 { color: #b45309; }
+  .q-tr { background: #f0fdf4; border: 1px solid #bbf7d0; } .q-tr h4 { color: #15803d; }
+  .q-bl { background: #faf9f7; border: 1px solid #e8e6e3; } .q-bl h4 { color: #9ca3af; }
+  .q-br { background: #ecfeff; border: 1px solid #a5f3fc; } .q-br h4 { color: #0e7490; }
+
+  .hyp-card {
+    background: #fff5f5; border: 1px solid #fecaca; border-radius: 12px; padding: 28px; margin-top: 20px;
+  }
+  .hyp-title { font-size: 18px; font-weight: 700; color: #dc2626; margin-bottom: 12px; }
+  .hyp-flow {
+    display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 20px 0;
+  }
+  .hyp-node { padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center; }
+  .hn-1 { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .hn-2 { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .hn-3 { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .hn-4 { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+  .hyp-arrow { color: #9ca3af; font-size: 18px; }
+  .hyp-outcomes {
+    margin-top: 16px; padding: 16px; background: #faf9f7; border: 1px solid #e8e6e3; border-radius: 8px;
+    font-size: 12px; color: #6b7280; line-height: 1.8;
+  }
+  .hyp-outcomes strong { color: #1a1a1a; }
+  .hyp-d-items {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px; margin-top: 16px;
+  }
+  .hyp-d-item { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 10px 14px; }
+  .hyp-d-label { font-size: 11px; color: #dc2626; font-weight: 600; margin-bottom: 3px; }
+  .hyp-d-text { font-size: 11px; color: #6b7280; line-height: 1.4; }
+  .hyp-d-tag {
+    font-size: 9px; background: #fef2f2; color: #dc2626;
+    padding: 2px 5px; border-radius: 3px; display: inline-block; margin-top: 4px;
+  }
+
+  .bottom {
+    margin-top: 48px; padding: 20px; background: #fff;
+    border: 1px solid #e8e6e3; border-radius: 12px;
+    font-size: 13px; color: #6b7280; line-height: 1.8;
+  }
+  .bottom strong { color: #1a1a1a; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 22px; }
+    .cards { grid-template-columns: 1fr; }
+    .axis-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<nav style="display:flex; justify-content:space-between; align-items:center; padding:12px 24px; border-bottom:1px solid #e8e6e3;">
+  <a href="/" style="font-size:15px; font-weight:700; color:#6366f1; text-decoration:none;">🔬 CAVE Survey</a>
+  <div style="display:flex; gap:16px; align-items:center; font-size:13px;">
+    <a href="/guide" style="color:#6b7280; text-decoration:none;">AI Ops Pattern이란?</a>
+    <a href="/docs/coverage-map" style="color:#6366f1; font-weight:600; text-decoration:none;">커버리지 맵</a>
+    <a href="/survey" style="color:#6b7280; text-decoration:none;">설문하기</a>
+  </div>
+</nav>
+<div class="container">
+
+<h1>AI Ops 커버리지 맵</h1>
+<p class="subtitle">
+  설문 Part A를 3축으로 매핑합니다:<br>
+  <strong style="color:#b45309">Context Engineering</strong> (맥락 구성) × <strong style="color:#0e7490">Core Work</strong> (본업 수행) × <strong style="color:#db2777">Agency Direction</strong> (주체 방향)<br>
+  42문항, 페르소나 가상 응답 기반 검증 반영.
+</p>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-card"><div class="stat-num" style="color:#b45309">6</div><div class="stat-label">CE 영역 (Part A-1)</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#0e7490">3</div><div class="stat-label">CW 영역 (Part A-2)</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#c2410c">5</div><div class="stat-label">미포함</div></div>
+  <div class="stat-card"><div class="stat-num" style="color:#7c3aed">4</div><div class="stat-label">프론티어 (P3+)</div></div>
+</div>
+
+<!-- Coverage bars -->
+<div class="cov-wrap">
+  <div class="cov-row">
+    <div class="cov-label"><span>설문 커버리지 (CE 6 + CW 3 + Part B/D)</span><span style="color:#1a1a1a; font-weight:600">72%</span></div>
+    <div class="cov-bar">
+      <div class="f-ce" style="width:33.3%"></div>
+      <div class="f-cw" style="width:16.7%"></div>
+      <div class="f-miss" style="width:27.8%"></div>
+      <div class="f-front" style="width:22.2%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <button class="filter-btn active" onclick="filterCards('all')">전체 (18)</button>
+  <button class="filter-btn" data-type="ce" onclick="filterCards('ce')">CE 영역 (6)</button>
+  <button class="filter-btn" data-type="cw" onclick="filterCards('cw')">CW 영역 (3)</button>
+  <button class="filter-btn" data-type="miss" onclick="filterCards('miss')">미포함 (5)</button>
+  <button class="filter-btn" data-type="front" onclick="filterCards('front')">프론티어 (4)</button>
+</div>
+
+<!-- ===== CE Section ===== -->
+<h2 style="color:#b45309; margin-top:24px;">Part A-1. Context Engineering — 맥락 구성 (6영역)</h2>
+<p class="section-desc">AI로 정보를 수집·정리·연결·공유하여 팀의 판단 품질을 높이는 관리 활동</p>
+
+<div class="cat-group">
+  <div class="cat-header"><span>📋</span> 계획·추적</div>
+  <div class="cards">
+    <div class="card ce" data-type="ce">
+      <div class="card-top"><span class="card-name">A1. 일정 관리</span><span class="badge b-ce">CE</span></div>
+      <div class="card-desc">회의·마감·스프린트 계획 수립 및 조정</div>
+      <div class="chips"><span class="chip">P1: 일정 정리</span><span class="chip">P3: 자동 스케줄링</span></div>
+    </div>
+    <div class="card ce" data-type="ce">
+      <div class="card-top"><span class="card-name">A2. 업무 추적</span><span class="badge b-ce">CE</span></div>
+      <div class="card-desc">진행 상황 파악·보고·현황 공유</div>
+      <div class="chips"><span class="chip">P1: 데이터 수집</span><span class="chip">P3: 자동 리포팅</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cat-group">
+  <div class="cat-header"><span>📝</span> 기록·지식</div>
+  <div class="cards">
+    <div class="card ce" data-type="ce">
+      <div class="card-top"><span class="card-name">A3. 회의록·기록</span><span class="badge b-ce">CE</span></div>
+      <div class="card-desc">회의 기록·지식 정리·문서화</div>
+      <div class="chips"><span class="chip">P1: 초안 생성</span><span class="chip">P3: 작성+배포+액션아이템</span></div>
+    </div>
+    <div class="card ce" data-type="ce">
+      <div class="card-top"><span class="card-name">A5. 지식 관리·위키</span><span class="badge b-ce">CE</span></div>
+      <div class="card-desc">기술 문서 관리, 검색, 자동 업데이트, 온보딩 자료</div>
+      <div class="chips"><span class="chip">P1: AI 검색·요약</span><span class="chip">P3: 자동 문서 갱신</span></div>
+    </div>
+    <div class="card ce" data-type="ce">
+      <div class="card-top"><span class="card-name">A6. 데이터 수집·분석·인사이트</span><span class="badge b-ce">CE</span></div>
+      <div class="card-desc">지표 해석, 트렌드 탐지, 의사결정 지원 맥락 제공</div>
+      <div class="chips"><span class="chip">P1: 시각화·요약</span><span class="chip">P3: 이상 탐지·자동 보고</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cat-group">
+  <div class="cat-header"><span>💬</span> 소통·공유</div>
+  <div class="cards">
+    <div class="card ce" data-type="ce">
+      <div class="card-top"><span class="card-name">A4. 공지·커뮤니케이션</span><span class="badge b-ce">CE</span></div>
+      <div class="card-desc">팀 공지·정보 공유</div>
+      <div class="chips"><span class="chip">P1: 초안 작성</span><span class="chip">P3: 자동 공지</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CW Section ===== -->
+<h2 style="color:#4fc3f7;">Part A-2. Core Work — 본업 수행 (3영역, 직군 공통)</h2>
+<p class="section-desc">개발·기획·디자인·연구·데이터분석 등 전문 직무를 AI와 함께 수행하는 활동</p>
+
+<div class="cat-group">
+  <div class="cards">
+    <div class="card cw" data-type="cw">
+      <div class="card-top"><span class="card-name">A7. 본업 산출물 생산</span><span class="badge b-cw">CW</span></div>
+      <div class="card-desc">전문 직무의 핵심 결과물을 AI와 함께 만드는 것</div>
+      <div class="card-examples">
+        <span>개발: 코드 작성, 설계 문서</span>
+        <span>기획: 기획서·PRD, 정책 정의</span>
+        <span>디자인: 시안·프로토타입</span>
+        <span>데이터: 분석 보고서, 대시보드</span>
+      </div>
+      <div class="chips"><span class="chip">P1: 참고 자료 제공</span><span class="chip">P2: AI 초안+사람 수정</span><span class="chip">P3: AI가 대부분 생성</span></div>
+    </div>
+
+    <div class="card cw" data-type="cw">
+      <div class="card-top"><span class="card-name">A8. 본업 품질 검증·리뷰</span><span class="badge b-cw">CW</span></div>
+      <div class="card-desc">산출물의 품질을 AI와 함께 검증하는 것</div>
+      <div class="card-examples">
+        <span>개발: 코드 리뷰, 버그 탐지</span>
+        <span>기획: 요구사항 정합성, 엣지케이스</span>
+        <span>디자인: UI 일관성, 접근성 검증</span>
+        <span>데이터: 결과 검증, 품질 체크</span>
+      </div>
+      <div class="chips"><span class="chip">P2: AI가 이슈 제안</span><span class="chip">P3: 자동 검증</span></div>
+    </div>
+
+    <div class="card cw" data-type="cw">
+      <div class="card-top"><span class="card-name">A9. 우선순위·의사결정</span><span class="badge b-cw">CW</span></div>
+      <div class="card-desc">업무 방향성과 중요도를 AI와 함께 판단하는 것</div>
+      <div class="card-examples">
+        <span>개발: 기술 부채 vs 신규 기능</span>
+        <span>기획: 로드맵 조정, Go/No-Go</span>
+        <span>디자인: 디자인 시스템 우선순위</span>
+        <span>데이터: 분석 주제 우선순위</span>
+      </div>
+      <div class="chips"><span class="chip">P1: 데이터 제공</span><span class="chip">P3: 자동 순위 조정</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 미포함 ===== -->
+<h2 style="color:#ff6d00;">미포함 영역 (5)</h2>
+<p class="section-desc">관리 기능이지만 Part A에 미포함. Part B 깊이 측정이나 직군별 옵션으로 커버 가능</p>
+
+<div class="cat-group">
+  <div class="cards">
+    <div class="card miss" data-type="miss">
+      <div class="card-top"><span class="card-name">리소스 할당</span><span class="badge b-miss">미포함</span></div>
+      <div class="card-desc">인력 배치, 업무 분배, 팀 간 협업 자원 조율</div>
+    </div>
+    <div class="card miss" data-type="miss">
+      <div class="card-top"><span class="card-name">테스트·QA</span><span class="badge b-miss">미포함</span></div>
+      <div class="card-desc">테스트 케이스 생성, 자동 테스트, 품질 게이트 (개발 직군)</div>
+    </div>
+    <div class="card miss" data-type="miss">
+      <div class="card-top"><span class="card-name">배포·릴리즈 관리</span><span class="badge b-miss">미포함</span></div>
+      <div class="card-desc">배포 판단, 롤백 결정, 카나리/블루그린 전략 (개발 직군)</div>
+    </div>
+    <div class="card miss" data-type="miss">
+      <div class="card-top"><span class="card-name">보안·컴플라이언스</span><span class="badge b-miss">미포함</span></div>
+      <div class="card-desc">보안 취약점 탐지, 정책 준수 검증, 접근 권한 관리</div>
+    </div>
+    <div class="card miss" data-type="miss">
+      <div class="card-top"><span class="card-name">외부 협업·고객 소통</span><span class="badge b-miss">미포함</span></div>
+      <div class="card-desc">외부 파트너·고객 커뮤니케이션, 이메일·티켓 관리</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 프론티어 ===== -->
+<h2 style="color:#ab47bc;">프론티어 — P3~P4에서 등장 (4)</h2>
+<p class="section-desc">P0~P2 조직에서는 해당 없을 수 있으므로 조건부 문항 권장</p>
+
+<div class="cat-group">
+  <div class="cards">
+    <div class="card front" data-type="front">
+      <div class="card-top"><span class="card-name">성과 평가·피드백</span><span class="badge b-front">P3+</span></div>
+      <div class="card-desc">기여도 측정, 동료 평가 분석, 1:1 피드백 초안</div>
+    </div>
+    <div class="card front" data-type="front">
+      <div class="card-top"><span class="card-name">채용·면접</span><span class="badge b-front">P3+</span></div>
+      <div class="card-desc">이력서 스크리닝, 기술 면접 보조, 채용 파이프라인</div>
+    </div>
+    <div class="card front" data-type="front">
+      <div class="card-top"><span class="card-name">예산·비용 최적화</span><span class="badge b-front">P3+</span></div>
+      <div class="card-desc">클라우드 비용 분석, 예산 예측, 리소스 최적화</div>
+    </div>
+    <div class="card front" data-type="front">
+      <div class="card-top"><span class="card-name">고객 대응·CS 연계</span><span class="badge b-front">P3+</span></div>
+      <div class="card-desc">VOC→백로그 연결, 티켓 분류, 자동 에스컬레이션</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Agency Direction ===== -->
+<div class="axis-section">
+  <h2 style="color:#e91e63;">축 3: Agency Direction (주체 방향)</h2>
+  <p class="section-desc">
+    같은 AI Ops Pattern이라도 <strong>"누가 주도했느냐"</strong>에 따라 자율성 체감이 달라집니다.<br>
+    Part A 각 문항에 sub-question(a/b/c)으로 측정합니다. 문항 수 추가 없이 응답 부담 최소.
+  </p>
+
+  <div style="max-width:700px; margin:0 auto 32px;">
+    <div style="display:flex; align-items:center; gap:3px; margin-bottom:12px;">
+      <div style="flex:1; height:40px; background:linear-gradient(90deg, rgba(0,229,255,0.2), rgba(0,229,255,0.05)); border-radius:8px 0 0 8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#6366f1; border:1px solid rgba(99,102,241,0.3);">
+        (a) 구성원 자발
+      </div>
+      <div style="flex:1; height:40px; background:linear-gradient(90deg, rgba(255,213,79,0.15), rgba(255,213,79,0.05)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#b45309; border:1px solid rgba(245,158,11,0.3);">
+        (b) 리더 권장
+      </div>
+      <div style="flex:1; height:40px; background:linear-gradient(90deg, rgba(239,83,80,0.15), rgba(239,83,80,0.05)); border-radius:0 8px 8px 0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:#dc2626; border:1px solid rgba(239,83,80,0.3);">
+        (c) 조직 시스템
+      </div>
+    </div>
+    <div style="display:flex; justify-content:space-between; font-size:11px; color:#9ca3af; padding:0 4px;">
+      <span>← Bottom-up "내가 AI를 쓴다"</span>
+      <span>Top-down "AI가 나를 관리한다" →</span>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; max-width:700px; margin:0 auto;">
+    <div style="background:rgba(99,102,241,0.03); border:1px solid #e0e0ff; border-radius:10px; padding:16px; text-align:center;">
+      <div style="font-size:14px; font-weight:700; color:#6366f1; margin-bottom:6px;">자발 주도형</div>
+      <div style="font-size:11px; color:#6b7280; line-height:1.5;">Bottom-up ≥ 70%<br>자율성 강화 기대<br><br>P1~P2에서 주로 관찰</div>
+    </div>
+    <div style="background:rgba(245,158,11,0.03); border:1px solid rgba(255,213,79,0.15); border-radius:10px; padding:16px; text-align:center;">
+      <div style="font-size:14px; font-weight:700; color:#b45309; margin-bottom:6px;">혼합형</div>
+      <div style="font-size:11px; color:#6b7280; line-height:1.5;">Bottom-up 40~69%<br>개인+조직 도입 혼재<br><br>전환기 조직에서 관찰</div>
+    </div>
+    <div style="background:rgba(220,38,38,0.03); border:1px solid rgba(220,38,38,0.15); border-radius:10px; padding:16px; text-align:center;">
+      <div style="font-size:14px; font-weight:700; color:#dc2626; margin-bottom:6px;">시스템 주도형</div>
+      <div style="font-size:11px; color:#6b7280; line-height:1.5;">Bottom-up ≤ 39%<br>감시 체감 가능성 주의<br><br>P3~P4에서 주로 관찰</div>
+    </div>
+  </div>
+
+  <div style="max-width:700px; margin:24px auto 0; padding:16px; background:rgba(219,39,119,0.05); border:1px solid rgba(219,39,119,0.15); border-radius:10px;">
+    <div style="font-size:13px; color:#e91e63; font-weight:600; margin-bottom:8px;">핵심 교차 분석</div>
+    <div style="font-size:12px; color:#6b7280; line-height:1.8;">
+      <span style="color:#6366f1;">●</span> Bottom-up + P2 → <strong style="color:#1a1a1a;">"내가 선택해서 AI를 쓰고 있다"</strong> → 자율성 체감↑<br>
+      <span style="color:#dc2626;">●</span> Top-down + P2 → <strong style="color:#1a1a1a;">"조직이 도입한 AI 안에서 일한다"</strong> → 같은 P2인데 감시 체감 가능<br>
+      <span style="color:#b45309;">●</span> Top-down + 높은 투명성(D1~D3) → <strong style="color:#1a1a1a;">투명성이 감시를 완화하는가?</strong> → 가설의 조절 변수
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2-Axis diagram ===== -->
+<div class="axis-section">
+  <h2>축 1-2: Context Engineering × Core Work</h2>
+  <p class="section-desc">
+    Part A에서 <strong>조직의 AI 위임 수준</strong>(Pattern)을, Part B에서 <strong>개인의 AI 활용 행동</strong>을 측정합니다.<br>
+    CE와 CW 각각의 Pattern으로 조직의 AI 활용 프로필을 4유형으로 판정합니다.
+  </p>
+
+  <div class="axis-diagram">
+    <div class="axis-label-y">Core Work (본업) ↑</div>
+    <div class="axis-grid">
+      <div class="quad q-tl">
+        <h4>맥락 구성형</h4>
+        <p>CE 높음 · CW 낮음<br>AI를 정보 정리·공유에 주로 활용<br>본업 자체에는 AI 미활용</p>
+        <div class="parts" style="color:#b45309;">A-1 Pattern ↑ · A-2 Pattern ↓</div>
+      </div>
+      <div class="quad q-tr">
+        <h4>통합 활용형</h4>
+        <p>CE 높음 · CW 높음<br>맥락 구성 + 본업 모두 AI 활용<br>가장 성숙한 AI 활용 단계</p>
+        <div class="parts" style="color:#66bb6a;">A-1 Pattern ↑ · A-2 Pattern ↑</div>
+      </div>
+      <div class="quad q-bl">
+        <h4>초기 단계</h4>
+        <p>CE 낮음 · CW 낮음<br>두 차원 모두 AI 활용이 낮음<br>P0~P1 수준</p>
+        <div class="parts" style="color:#78909c;">A-1 Pattern ↓ · A-2 Pattern ↓</div>
+      </div>
+      <div class="quad q-br">
+        <h4>본업 활용형</h4>
+        <p>CE 낮음 · CW 높음<br>AI를 산출물 생산에 주로 활용<br>맥락 공유·정보 구조화는 미흡</p>
+        <div class="parts" style="color:#4fc3f7;">A-1 Pattern ↓ · A-2 Pattern ↑</div>
+      </div>
+    </div>
+    <div class="axis-label-x">Context Engineering (맥락 구성) →</div>
+  </div>
+</div>
+
+<!-- ===== Transparency Hypothesis ===== -->
+<div class="axis-section">
+  <h2 style="color:#dc2626;">Part D. 정보 투명성 → 자율성 가설</h2>
+
+  <div class="hyp-card">
+    <div class="hyp-title">가설: 리더가 정보를 투명하게 제공할수록, 구성원의 자율성은 높아진다</div>
+
+    <div class="hyp-flow">
+      <div class="hyp-node hn-1">리더의<br>정보 공유 의지</div>
+      <div class="hyp-arrow">→</div>
+      <div class="hyp-node hn-2">AI(CE)가<br>맥락을 구조화</div>
+      <div class="hyp-arrow">→</div>
+      <div class="hyp-node hn-3">구성원이<br>정보에 접근</div>
+      <div class="hyp-arrow">→</div>
+      <div class="hyp-node hn-4">자율적<br>의사결정</div>
+    </div>
+
+    <p style="font-size:12px; color:#6b7280; margin-bottom:12px;">
+      CE Pattern↑ → 투명성↑? → AI 기여 자율성(C10~C12)↑? 주체 방향(a/b/c)이 이 관계를 조절하는가?
+    </p>
+
+    <p style="font-size:13px; color:#e91e63; font-weight:600; margin-bottom:8px;">감시 체감 3문항 분화 + AI 기여 자율성 3문항 추가 (페르소나 검증 반영)</p>
+
+    <div class="hyp-d-items">
+      <div class="hyp-d-item"><div class="hyp-d-label">D1</div><div class="hyp-d-text">맥락 정보를 나는 충분히 얻을 수 있다</div><span class="hyp-d-tag">투명성</span></div>
+      <div class="hyp-d-item"><div class="hyp-d-label">D2</div><div class="hyp-d-text">이전에는 접근 어려웠던 정보에 접근 가능</div><span class="hyp-d-tag">투명성</span></div>
+      <div class="hyp-d-item"><div class="hyp-d-label">D3</div><div class="hyp-d-text">AI 정리 정보로 스스로 판단한 경험</div><span class="hyp-d-tag">투명성→자율성</span></div>
+      <div class="hyp-d-item"><div class="hyp-d-label">D4</div><div class="hyp-d-text">혼자서도 판단 가능한 일 증가</div><span class="hyp-d-tag">자율성</span></div>
+      <div class="hyp-d-item"><div class="hyp-d-label">D5</div><div class="hyp-d-text">AI 추천의 이유를 납득 가능</div><span class="hyp-d-tag">AI 납득성</span></div>
+      <div class="hyp-d-item" style="border-color:rgba(239,83,80,0.2)"><div class="hyp-d-label" style="color:#dc2626">D6</div><div class="hyp-d-text">업무가 더 들여다보여지는 느낌</div><span class="hyp-d-tag" style="background:rgba(220,38,38,0.08)">감시: 가시성</span></div>
+      <div class="hyp-d-item" style="border-color:rgba(239,83,80,0.2)"><div class="hyp-d-label" style="color:#dc2626">D7</div><div class="hyp-d-text">AI 데이터가 성과 평가에 쓰일까 우려</div><span class="hyp-d-tag" style="background:rgba(220,38,38,0.08)">감시: 평가 우려</span></div>
+      <div class="hyp-d-item" style="border-color:rgba(239,83,80,0.2)"><div class="hyp-d-label" style="color:#dc2626">D8</div><div class="hyp-d-text">AI 사용 기록이 남는 것에 대한 부담</div><span class="hyp-d-tag" style="background:rgba(220,38,38,0.08)">감시: 행동 위축</span></div>
+      <div class="hyp-d-item"><div class="hyp-d-label">D9</div><div class="hyp-d-text">맡겨도 될 일을 직접 하게 됨</div><span class="hyp-d-tag">위임 허들</span></div>
+      <div class="hyp-d-item"><div class="hyp-d-label">D10</div><div class="hyp-d-text">맡기면서 직접 하는 일 감소</div><span class="hyp-d-tag">위임 효과</span></div>
+    </div>
+
+    <div style="margin-top:16px; padding:14px; background:rgba(171,71,188,0.08); border:1px solid rgba(171,71,188,0.2); border-radius:8px;">
+      <div style="font-size:12px; color:#ab47bc; font-weight:600; margin-bottom:6px;">Part C: AI 기여 자율성 (C10~C12)</div>
+      <div style="font-size:11px; color:#6b7280; line-height:1.6;">
+        C10. AI 도입 후 더 많은 결정을 스스로 내리게 되었다<br>
+        C11. AI 정보 덕분에 상급자 확인 없이 진행하는 일이 늘었다<br>
+        C12. AI가 없었다면 지금처럼 자율적으로 일하기 어려웠을 것이다<br>
+        <br>
+        <span style="color:#ab47bc;">→</span> 기준선(C1~C9)이 높아도 AI 기여분(C10~C12)이 낮으면 = 직위 자율성 (교수·경영진 유형)
+      </div>
+    </div>
+
+    <div class="hyp-outcomes" style="margin-top:12px;">
+      <strong>Before → After 검증 시나리오 (v2 정밀화)</strong><br>
+      <span style="color:#66bb6a;">●</span> 투명성↑ + AI 기여 자율성(C10~C12)↑ → <strong style="color:#66bb6a">가설 지지</strong><br>
+      <span style="color:#b45309;">●</span> 투명성↑ + AI 기여 자율성→ → <strong style="color:#b45309">정보 공개는 되었으나 전환 미발생</strong><br>
+      <span style="color:#dc2626;">●</span> 투명성↑ + 감시 체감(D6~D8)↑ → <strong style="color:#dc2626">투명성의 역설</strong><br>
+      <span style="color:#e91e63;">●</span> Top-down 주도 + 감시↑ vs Bottom-up 주도 + 감시↓ → <strong style="color:#db2777">주체 방향이 조절 변수</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Bottom ===== -->
+<div class="bottom">
+  <strong>설문 전체 구조 (42문항 + 주체 sub-Q, ~17분)</strong><br><br>
+  <span style="color:#b45309;">■</span> <strong>Part A-1</strong> (6문항) — CE Pattern + N/A + 주체(역할별 분기)<br>
+  <span style="color:#4fc3f7;">■</span> <strong>Part A-2</strong> (3문항) — CW Pattern + N/A + 주체(역할별 분기)<br>
+  <span style="color:#e91e63;">■</span> <strong>주체 방향</strong> — 리더/구성원 별도 선택지 (자기참조 해결)<br>
+  <span style="color:#6b7280;">■</span> <strong>Part B</strong> (8문항) — AI 활용 <strong>행동 패턴</strong> (CE 4 + CW 4, 중복 제거)<br>
+  <span style="color:#ab47bc;">■</span> <strong>Part C</strong> (<strong>12문항</strong>) — 자율성 기준선 9 + <strong>AI 기여 자율성 3</strong><br>
+  <span style="color:#dc2626;">■</span> <strong>Part D</strong> (<strong>10문항</strong>) — 투명성 3 + 인식 2 + <strong>감시 3차원</strong> + 위임 2<br>
+  <span style="color:#78909c;">■</span> <strong>Part E</strong> (3문항) — 주관식 (P0~P1은 E3 조건 분기)<br><br>
+  <strong>페르소나 검증 기반 개선</strong>:<br>
+  1. Part A에 <strong>(N/A)</strong> 추가 → P0과 "해당 없음" 구분<br>
+  2. 주체 방향 <strong>역할별 분기</strong> → 리더 자기참조 해결<br>
+  3. Part B 3문항 교체 → Part A와 <strong>중복 제거</strong> (What vs How)<br>
+  4. Part C에 <strong>AI 기여 자율성</strong> C10~C12 추가 → 직위 자율성 교란 분리<br>
+  5. 감시 체감 <strong>1→3문항</strong> (가시성/평가우려/행동위축)<br>
+  6. 투명성 문항 <strong>수신자 시점</strong>으로 통일<br>
+  7. E3 <strong>조건 분기</strong> → AI 미활용자도 답변 가능
+</div>
+
+</div>
+
+<script>
+function filterCards(type) {
+  const cards = document.querySelectorAll('.card');
+  const btns = document.querySelectorAll('.filter-btn');
+  btns.forEach(b => {
+    b.classList.remove('active');
+    if (type === 'all' && !b.dataset.type) b.classList.add('active');
+    if (b.dataset.type === type) b.classList.add('active');
+  });
+  if (type === 'all') btns[0].classList.add('active');
+  cards.forEach(c => {
+    if (type === 'all') c.classList.remove('hidden');
+    else c.dataset.type === type ? c.classList.remove('hidden') : c.classList.add('hidden');
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAVE Survey</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: #faf9f7;
+    color: #1a1a1a;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Progress ── */
+  .progress {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 4px; background: #e8e6e3;
+  }
+  .progress-fill {
+    height: 100%; background: #6366f1; transition: width 0.4s ease;
+  }
+  .progress-info {
+    position: fixed; top: 12px; right: 20px; z-index: 100;
+    font-size: 13px; color: #9ca3af; font-weight: 500;
+  }
+  .back-btn {
+    position: fixed; top: 10px; left: 20px; z-index: 100;
+    font-size: 14px; color: #9ca3af; cursor: pointer;
+    background: none; border: none; padding: 6px 12px; border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .back-btn:hover { background: #f0efec; color: #1a1a1a; }
+
+  /* ── Slide container ── */
+  .slides {
+    height: 100vh; overflow: hidden; position: relative;
+  }
+  .slide {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 80px 24px 40px;
+    opacity: 0; transform: translateY(30px);
+    transition: all 0.35s ease;
+    pointer-events: none;
+    overflow-y: auto;
+  }
+  .slide.active {
+    opacity: 1; transform: translateY(0);
+    pointer-events: auto;
+  }
+  .slide-inner {
+    max-width: 560px; width: 100%;
+  }
+
+  /* ── Typography ── */
+  .q-part {
+    font-size: 13px; font-weight: 600; color: #6366f1;
+    margin-bottom: 8px; letter-spacing: 0.5px;
+  }
+  .q-text {
+    font-size: 24px; font-weight: 700; line-height: 1.4;
+    margin-bottom: 8px; color: #1a1a1a;
+  }
+  .q-sub {
+    font-size: 15px; color: #6b7280; line-height: 1.5;
+    margin-bottom: 32px;
+  }
+
+  /* ── Choice buttons ── */
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; background: #fff;
+    border: 1.5px solid #e5e3e0; border-radius: 12px;
+    cursor: pointer; transition: all 0.15s;
+    font-size: 15px; color: #374151; line-height: 1.4;
+    min-height: 52px;
+  }
+  .choice:hover { border-color: #c7c5c2; background: #fefefe; }
+  .choice.selected {
+    border-color: #6366f1; background: #f0f0ff;
+    color: #1a1a1a; font-weight: 500;
+  }
+  .choice-key {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #9ca3af;
+    border: 1.5px solid #e5e3e0; flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .choice.selected .choice-key {
+    background: #6366f1; color: #fff; border-color: #6366f1;
+  }
+
+  /* ── Likert scale (horizontal) ── */
+  .likert-row {
+    display: flex; gap: 8px; justify-content: center;
+  }
+  .likert-btn {
+    flex: 1; max-width: 100px; padding: 20px 8px; text-align: center;
+    background: #fff; border: 1.5px solid #e5e3e0; border-radius: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .likert-btn:hover { border-color: #c7c5c2; }
+  .likert-btn.selected { border-color: #6366f1; background: #f0f0ff; }
+  .likert-btn .l-num {
+    font-size: 22px; font-weight: 700; color: #374151;
+  }
+  .likert-btn.selected .l-num { color: #6366f1; }
+  .likert-btn .l-label {
+    font-size: 11px; color: #9ca3af; margin-top: 4px;
+  }
+
+  /* ── Agency follow-up ── */
+  .agency-section {
+    margin-top: 24px; padding-top: 24px; border-top: 1px solid #e8e6e3;
+    opacity: 0; max-height: 0; overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .agency-section.show {
+    opacity: 1; max-height: 400px;
+  }
+  .agency-label {
+    font-size: 14px; font-weight: 600; color: #6366f1;
+    margin-bottom: 12px;
+  }
+
+  /* ── Text input ── */
+  .text-input {
+    width: 100%; min-height: 120px; padding: 16px;
+    background: #fff; border: 1.5px solid #e5e3e0; border-radius: 12px;
+    font-size: 15px; color: #1a1a1a; resize: vertical;
+    font-family: inherit; line-height: 1.6;
+    transition: border-color 0.15s;
+  }
+  .text-input:focus { outline: none; border-color: #6366f1; }
+  .text-input::placeholder { color: #c7c5c2; }
+
+  /* ── Info form ── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .info-field label {
+    display: block; font-size: 14px; font-weight: 500;
+    color: #6b7280; margin-bottom: 6px;
+  }
+  .info-field select, .info-field input[type="text"] {
+    width: 100%; padding: 12px 16px;
+    background: #fff; color: #1a1a1a;
+    border: 1.5px solid #e5e3e0; border-radius: 10px;
+    font-size: 15px; font-family: inherit;
+    transition: border-color 0.15s;
+    appearance: auto;
+  }
+  .info-field select:focus, .info-field input:focus {
+    outline: none; border-color: #6366f1;
+  }
+  .role-hint {
+    font-size: 12px; color: #6366f1; margin-top: 2px;
+  }
+
+  /* ── Buttons ── */
+  .next-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 32px; background: #6366f1; color: #fff;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; margin-top: 24px;
+    font-family: inherit;
+  }
+  .next-btn:hover { background: #4f46e5; }
+  .next-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .next-btn svg { width: 16px; height: 16px; }
+
+  .skip-btn {
+    display: block; margin-top: 16px;
+    font-size: 13px; color: #9ca3af; cursor: pointer;
+    background: none; border: none; font-family: inherit;
+    transition: color 0.15s;
+  }
+  .skip-btn:hover { color: #6b7280; }
+
+  /* ── Intro/Outro ── */
+  .intro-icon { font-size: 48px; margin-bottom: 16px; }
+  .intro-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .intro-desc { font-size: 16px; color: #6b7280; line-height: 1.6; margin-bottom: 32px; }
+
+  @media (max-width: 600px) {
+    .q-text { font-size: 20px; }
+    .info-grid { grid-template-columns: 1fr; }
+    .likert-row { gap: 6px; }
+    .likert-btn { padding: 16px 4px; }
+    .likert-btn .l-num { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress -->
+<div class="progress"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+<div class="progress-info" id="progressInfo"></div>
+<button class="back-btn" id="backBtn" onclick="prevSlide()" style="display:none;">← 이전</button>
+
+<form id="surveyForm" action="/submit" method="post">
+<div class="slides" id="slides">
+
+  <!-- ===== Slide 0: Intro ===== -->
+  <div class="slide active" data-idx="0">
+    <div class="slide-inner" style="text-align:center;">
+      <div class="intro-icon">🔬</div>
+      <h1 class="intro-title">CAVE AI Ops 설문</h1>
+      <p class="intro-desc">
+        우리 조직의 AI 활용 수준을 진단합니다.<br>
+        총 42문항, 약 15분 소요됩니다.
+      </p>
+      <button type="button" class="next-btn" onclick="nextSlide()">
+        시작하기
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Slide 1: Demographics ===== -->
+  <div class="slide" data-idx="1">
+    <div class="slide-inner">
+      <p class="q-part">응답자 정보</p>
+      <p class="q-text">기본 정보를 알려주세요</p>
+      <p class="q-sub">주체 방향 선택지가 역할에 따라 달라집니다.</p>
+      <div class="info-grid">
+        <div class="info-field">
+          <label>닉네임</label>
+          <input type="text" name="nickname" value="{{ user.nickname if user else '테스터' }}" readonly>
+        </div>
+        <div class="info-field">
+          <label>조직 규모</label>
+          <select name="org_size" required>
+            <option value="">선택해주세요</option>
+            <option value="~10명">~10명</option>
+            <option value="11~30명">11~30명</option>
+            <option value="31~50명">31~50명</option>
+            <option value="50명+">50명+</option>
+          </select>
+        </div>
+        <div class="info-field">
+          <label>역할</label>
+          <select name="role" id="roleSelect" required onchange="window._role=this.value">
+            <option value="">선택해주세요</option>
+            <option value="리더">리더</option>
+            <option value="구성원">구성원</option>
+          </select>
+          <p class="role-hint">리더/구성원에 따라 주체 방향이 달라집니다</p>
+        </div>
+        <div class="info-field">
+          <label>직무</label>
+          <select name="job" required>
+            <option value="">선택해주세요</option>
+            <option value="개발">개발</option>
+            <option value="기획">기획</option>
+            <option value="디자인">디자인</option>
+            <option value="데이터분석">데이터분석</option>
+            <option value="연구">연구</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="info-field" style="grid-column:span 2;">
+          <label>AI 도구 사용 기간</label>
+          <select name="ai_duration" required>
+            <option value="">선택해주세요</option>
+            <option value="미사용">미사용</option>
+            <option value="~3개월">~3개월</option>
+            <option value="3~12개월">3~12개월</option>
+            <option value="1년+">1년+</option>
+          </select>
+        </div>
+      </div>
+      <button type="button" class="next-btn" onclick="nextSlide()">
+        다음
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Question Slides (generated by JS) ===== -->
+
+  <!-- ===== Last Slide: Submit ===== -->
+  <div class="slide" data-idx="last">
+    <div class="slide-inner" style="text-align:center;">
+      <div class="intro-icon">✅</div>
+      <h1 class="intro-title">응답 완료!</h1>
+      <p class="intro-desc">제출하면 AI Ops Pattern 진단 결과를 바로 확인할 수 있습니다.</p>
+      <button type="button" class="next-btn" style="font-size:17px; padding:16px 40px;" onclick="document.getElementById('surveyForm').submit();">
+        결과 확인하기
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+</form>
+
+<script>
+// ── Question Data ──
+const QUESTIONS = {{ questions | tojson }};
+const PATTERN_OPTIONS = {{ pattern_options | tojson }};
+const AGENCY_MEMBER = {{ agency_member | tojson }};
+const AGENCY_LEADER = {{ agency_leader | tojson }};
+
+window._role = '';
+
+// ── Build question slides ──
+const slidesContainer = document.getElementById('slides');
+const lastSlide = slidesContainer.querySelector('[data-idx="last"]');
+let slideIdx = 2; // 0=intro, 1=demo
+
+QUESTIONS.forEach((q, i) => {
+  const div = document.createElement('div');
+  div.className = 'slide';
+  div.dataset.idx = slideIdx;
+  div.dataset.qid = q.id;
+  div.dataset.type = q.type;
+
+  let inner = `<div class="slide-inner">`;
+  inner += `<p class="q-part">Part ${q.part} · ${q.section}</p>`;
+  inner += `<p class="q-text">${q.text}</p>`;
+  if (q.sub) inner += `<p class="q-sub">${q.sub}</p>`;
+
+  if (q.type === 'pattern') {
+    inner += `<div class="choices" id="choices-${q.id}">`;
+    PATTERN_OPTIONS.forEach((opt, j) => {
+      inner += `<div class="choice" onclick="pickPattern('${q.id}','${opt.value}',this)">
+        <span class="choice-key">${opt.label}</span>
+        <span>${opt.desc}</span>
+      </div>`;
+    });
+    inner += `</div>`;
+    inner += `<input type="hidden" name="${q.id}" id="input-${q.id}">`;
+
+    // Agency section
+    inner += `<div class="agency-section" id="agency-${q.id}">`;
+    inner += `<p class="agency-label">이 AI 활용은 누구의 주도로 이루어지나요?</p>`;
+    inner += `<div class="choices" id="agency-choices-${q.id}"></div>`;
+    inner += `<input type="hidden" name="${q.id}_agency" id="input-${q.id}_agency">`;
+    inner += `</div>`;
+
+  } else if (q.type === 'likert') {
+    const labels = ['전혀\n아니다','아니다','보통','그렇다','매우\n그렇다'];
+    inner += `<div class="likert-row">`;
+    for (let v = 1; v <= 5; v++) {
+      inner += `<div class="likert-btn" onclick="pickLikert('${q.id}',${v},this)">
+        <div class="l-num">${v}</div>
+        <div class="l-label">${labels[v-1]}</div>
+      </div>`;
+    }
+    inner += `</div>`;
+    inner += `<input type="hidden" name="${q.id}" id="input-${q.id}">`;
+
+  } else if (q.type === 'text') {
+    inner += `<textarea class="text-input" name="${q.id}" id="input-${q.id}" placeholder="자유롭게 적어주세요 (없으면 '없음')"></textarea>`;
+    inner += `<button type="button" class="next-btn" onclick="nextSlide()">다음
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>`;
+    inner += `<button type="button" class="skip-btn" onclick="nextSlide()">건너뛰기</button>`;
+  }
+
+  inner += `</div>`;
+  div.innerHTML = inner;
+  slidesContainer.insertBefore(div, lastSlide);
+  slideIdx++;
+});
+
+// Update last slide index
+lastSlide.dataset.idx = slideIdx;
+
+const totalSlides = slideIdx + 1;
+let current = 0;
+
+// ── Navigation ──
+function showSlide(idx) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  const target = document.querySelector(`.slide[data-idx="${idx}"]`);
+  if (target) target.classList.add('active');
+  current = idx;
+
+  // Progress
+  const pct = Math.round((idx / (totalSlides - 1)) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  // Info text
+  const info = document.getElementById('progressInfo');
+  if (idx === 0) info.textContent = '';
+  else if (idx >= totalSlides - 1) info.textContent = '완료!';
+  else info.textContent = `${idx} / ${totalSlides - 2}`;
+
+  // Back button
+  document.getElementById('backBtn').style.display = idx > 0 ? 'block' : 'none';
+}
+
+function nextSlide() { showSlide(current + 1); }
+function prevSlide() { if (current > 0) showSlide(current - 1); }
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+    e.preventDefault();
+    nextSlide();
+  }
+});
+
+// ── Selections ──
+function pickPattern(qid, val, el) {
+  el.parentElement.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById(`input-${qid}`).value = val;
+
+  const agencySection = document.getElementById(`agency-${qid}`);
+  if (val !== 'na' && val !== '0') {
+    agencySection.classList.add('show');
+    renderAgency(qid);
+  } else {
+    agencySection.classList.remove('show');
+    document.getElementById(`input-${qid}_agency`).value = '';
+    setTimeout(nextSlide, 350);
+  }
+}
+
+function renderAgency(qid) {
+  const opts = window._role === '리더' ? AGENCY_LEADER : AGENCY_MEMBER;
+  const container = document.getElementById(`agency-choices-${qid}`);
+  container.innerHTML = opts.map((o, i) =>
+    `<div class="choice" onclick="pickAgency('${qid}','${o.value}',this)">
+      <span class="choice-key">${String.fromCharCode(65+i)}</span>
+      <span>${o.label}</span>
+    </div>`
+  ).join('');
+}
+
+function pickAgency(qid, val, el) {
+  el.parentElement.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById(`input-${qid}_agency`).value = val;
+  setTimeout(nextSlide, 350);
+}
+
+function pickLikert(qid, val, el) {
+  el.parentElement.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById(`input-${qid}`).value = val;
+  setTimeout(nextSlide, 300);
+}
+
+// Init — 인트로 건너뛰고 응답자 정보부터 시작
+showSlide(1);
+</script>
+</body>
+</html>
