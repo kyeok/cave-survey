@@ -247,17 +247,31 @@
   <h3 class="sec-title" style="color:#db2777;">축 3: Agency Direction (주체 방향)</h3>
   <p class="sec-desc">같은 Pattern이라도 "누가 주도했느냐"에 따라 자율성 체감이 달라집니다.</p>
 
-  <div class="agency-bar">
-    <div class="agency-item" style="background:#f0f0ff; color:#6366f1; border-radius:8px 0 0 8px;">(a) 구성원 자발</div>
-    <div class="agency-item" style="background:#fffbeb; color:#b45309;">(b) 리더 권장</div>
-    <div class="agency-item" style="background:#fef2f2; color:#dc2626; border-radius:0 8px 8px 0;">(c) 조직 시스템</div>
+  <!-- Concept Map -->
+  <div style="max-width:320px; margin:0 auto; position:relative; height:200px;">
+    <div style="position:absolute; left:50%; top:20px; width:2px; height:40px; background:#e5e3e0; transform:translateX(-50%);"></div>
+    <div style="position:absolute; left:50%; bottom:20px; width:2px; height:40px; background:#e5e3e0; transform:translateX(-50%);"></div>
+    <div style="position:absolute; top:50%; left:40px; height:2px; width:60px; background:#e5e3e0; transform:translateY(-50%);"></div>
+    <div style="position:absolute; top:50%; right:40px; height:2px; width:60px; background:#e5e3e0; transform:translateY(-50%);"></div>
+    <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:48px; height:48px; border-radius:50%; background:#f0f0ff; border:2px solid #6366f1; display:flex; align-items:center; justify-content:center; font-size:20px;">🧑</div>
+    <div style="position:absolute; top:0; left:50%; transform:translateX(-50%); padding:6px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; text-align:center;">
+      <span style="font-size:16px;">🏢</span><br><span style="font-size:11px; color:#dc2626; font-weight:600;">상위 조직</span><br><span style="font-size:9px; color:#9ca3af;">(c) Top-down</span>
+    </div>
+    <div style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); padding:6px 14px; background:#f0f0ff; border:1px solid #e0e0ff; border-radius:8px; text-align:center;">
+      <span style="font-size:16px;">🙋</span><br><span style="font-size:11px; color:#6366f1; font-weight:600;">개인 활용</span><br><span style="font-size:9px; color:#9ca3af;">(a) Bottom-up</span>
+    </div>
+    <div style="position:absolute; left:0; top:50%; transform:translateY(-50%); padding:6px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; text-align:center;">
+      <span style="font-size:16px;">🤝</span><br><span style="font-size:11px; color:#15803d; font-weight:600;">관련 팀</span><br><span style="font-size:9px; color:#9ca3af;">(d) Lateral</span>
+    </div>
+    <div style="position:absolute; right:0; top:50%; transform:translateY(-50%); padding:6px 14px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; text-align:center;">
+      <span style="font-size:16px;">👥</span><br><span style="font-size:11px; color:#b45309; font-weight:600;">리더·동료</span><br><span style="font-size:9px; color:#9ca3af;">(b) Lateral</span>
+    </div>
   </div>
-  <div class="agency-labels"><span>← Bottom-up "내가 AI를 쓴다"</span><span>Top-down "AI가 나를 관리한다" →</span></div>
 
-  <div class="agency-cards">
-    <div class="ag-card" style="background:#f0f0ff; border:1px solid #e0e0ff;"><h5 style="color:#6366f1;">자발 주도형</h5><p>≥70%<br>자율성 강화 기대</p></div>
-    <div class="ag-card" style="background:#fffbeb; border:1px solid #fde68a;"><h5 style="color:#b45309;">혼합형</h5><p>40~69%<br>전환기 조직</p></div>
-    <div class="ag-card" style="background:#fef2f2; border:1px solid #fecaca;"><h5 style="color:#dc2626;">시스템 주도형</h5><p>≤39%<br>감시 체감 가능성</p></div>
+  <div class="agency-cards" style="margin-top:24px;">
+    <div class="ag-card" style="background:#f0f0ff; border:1px solid #e0e0ff;"><h5 style="color:#6366f1;">자발 주도형</h5><p>Bottom-up ≥70%<br>자율성 강화 기대</p></div>
+    <div class="ag-card" style="background:#fffbeb; border:1px solid #fde68a;"><h5 style="color:#b45309;">혼합형</h5><p>Bottom-up 40~69%<br>전환기 조직</p></div>
+    <div class="ag-card" style="background:#fef2f2; border:1px solid #fecaca;"><h5 style="color:#dc2626;">시스템 주도형</h5><p>Bottom-up ≤39%<br>감시 체감 가능성</p></div>
   </div>
 
   <!-- 가설 -->
