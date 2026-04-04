@@ -38,6 +38,103 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 MEMBER_MAP = {"김계옥": "할리", "harley": "할리"}
 
+# ── Google Sheets ──
+SA_CREDENTIALS = os.environ.get("GOOGLE_SA_CREDENTIALS", "")
+OAUTH_TOKEN_JSON = os.environ.get("GOOGLE_OAUTH_TOKEN", "")
+
+def get_sheets_service():
+    try:
+        from googleapiclient.discovery import build
+        if SA_CREDENTIALS:
+            from google.oauth2 import service_account
+            info = json.loads(SA_CREDENTIALS)
+            creds = service_account.Credentials.from_service_account_info(
+                info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
+        elif OAUTH_TOKEN_JSON:
+            from google.oauth2.credentials import Credentials
+            info = json.loads(OAUTH_TOKEN_JSON)
+            creds = Credentials.from_authorized_user_info(info)
+        else:
+            return None
+        return build("sheets", "v4", credentials=creds)
+    except Exception as e:
+        print(f"[Sheets] auth error: {e}")
+        return None
+
+def ensure_sheet_exists(service, sheet_name: str):
+    """시트 탭이 없으면 생성하고 헤더 추가"""
+    try:
+        meta = service.spreadsheets().get(spreadsheetId=SPREADSHEET_ID).execute()
+        existing = [s["properties"]["title"] for s in meta.get("sheets", [])]
+        if sheet_name not in existing:
+            service.spreadsheets().batchUpdate(
+                spreadsheetId=SPREADSHEET_ID,
+                body={"requests": [{"addSheet": {"properties": {"title": sheet_name}}}]},
+            ).execute()
+            # 헤더 추가
+            headers = ['일시','닉네임','역할','조직규모','AI사용기간']
+            headers += [q["id"] for q in QUESTIONS]
+            headers += [f"A{i}_agency" for i in range(1, 10)]
+            headers += ['CE_avg','CE_pattern','CW_avg','CW_pattern','종합_avg','종합_pattern',
+                        '주체유형','Bottom-up%','자율성_기준선','AI_기여','투명성','감시_체감']
+            service.spreadsheets().values().append(
+                spreadsheetId=SPREADSHEET_ID, range=f"{sheet_name}!A1",
+                valueInputOption="RAW", body={"values": [headers]},
+            ).execute()
+            print(f"[Sheets] created sheet '{sheet_name}' with headers")
+    except Exception as e:
+        print(f"[Sheets] ensure_sheet error: {e}")
+
+def append_to_sheet(sheet_name: str, values: list):
+    service = get_sheets_service()
+    if not service:
+        return
+    try:
+        ensure_sheet_exists(service, sheet_name)
+        service.spreadsheets().values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f"{sheet_name}!A1",
+            valueInputOption="RAW",
+            body={"values": [values]},
+        ).execute()
+    except Exception as e:
+        print(f"[Sheets] append error: {e}")
+
+def save_to_sheets(results: dict, form_data: dict):
+    """42문항 응답 + 산출 결과를 Google Sheets에 저장"""
+    q_ids = [q["id"] for q in QUESTIONS]
+    row = [
+        results.get("surveyed_at", ""),
+        results.get("nickname", ""),
+        results.get("role", ""),
+        results.get("org_size", ""),
+        results.get("ai_duration", ""),
+    ]
+    # 42문항 응답값
+    for qid in q_ids:
+        row.append(form_data.get(qid, ""))
+    # Agency 응답 (A1~A9)
+    for i in range(1, 10):
+        row.append(form_data.get(f"A{i}_agency", ""))
+    # 산출 결과
+    ce = results.get("ce", {})
+    cw = results.get("cw", {})
+    overall = results.get("overall", {})
+    agency = results.get("agency", {})
+    autonomy = results.get("autonomy", {})
+    row += [
+        ce.get("avg", ""), f"P{ce.get('level', '?')}",
+        cw.get("avg", ""), f"P{cw.get('level', '?')}",
+        overall.get("avg", ""), f"P{overall.get('level', '?')}",
+        agency.get("type", ""), agency.get("bottom_up_pct", ""),
+        autonomy.get("baseline", ""), autonomy.get("ai_contrib", ""),
+        results.get("transparency", ""),
+        results.get("surveillance", {}).get("overall", ""),
+    ]
+    append_to_sheet("설문_42문항", row)
+
+
 # ── Pattern 정의 ──
 PATTERN_NAMES = {0: "No AI", 1: "AI 보조", 2: "AI 협업", 3: "AI 위임", 4: "AI 자율"}
 
@@ -80,24 +177,42 @@ AGENCY_LEADER = [
 QUESTIONS = [
     # Part A-1: Context Engineering (6문항)
     {"id": "A1", "part": "A-1", "section": "Context Engineering", "type": "pattern",
-     "text": "일정 관리", "sub": "회의·마감·스프린트 계획", "color": "#ffd54f"},
+     "text": "일정 관리", "sub": "회의·마감·스프린트 계획",
+     "examples": "예: AI가 캘린더 정리, 스프린트 플래닝 초안 생성, 일정 충돌 감지",
+     "color": "#ffd54f"},
     {"id": "A2", "part": "A-1", "section": "Context Engineering", "type": "pattern",
-     "text": "업무 추적", "sub": "진행 상황 파악·보고·현황 공유", "color": "#ffd54f"},
+     "text": "업무 추적", "sub": "진행 상황 파악·보고·현황 공유",
+     "examples": "예: AI가 Jira/이슈 현황 요약, 주간보고 초안 생성, 진행률 자동 업데이트",
+     "color": "#ffd54f"},
     {"id": "A3", "part": "A-1", "section": "Context Engineering", "type": "pattern",
-     "text": "회의록·기록", "sub": "회의 기록·지식 정리·문서화", "color": "#ffd54f"},
+     "text": "회의록·기록", "sub": "회의 기록·지식 정리·문서화",
+     "examples": "예: Clova Note/Otter로 녹취 요약, AI가 액션아이템 추출, 회의록 자동 배포",
+     "color": "#ffd54f"},
     {"id": "A4", "part": "A-1", "section": "Context Engineering", "type": "pattern",
-     "text": "공지·커뮤니케이션", "sub": "팀 공지·정보 공유", "color": "#ffd54f"},
+     "text": "공지·커뮤니케이션", "sub": "팀 공지·정보 공유",
+     "examples": "예: AI가 공지 초안 작성, 슬랙 채널에 자동 요약 배포, 온보딩 안내 생성",
+     "color": "#ffd54f"},
     {"id": "A5", "part": "A-1", "section": "Context Engineering", "type": "pattern",
-     "text": "지식 관리", "sub": "기술 문서·위키·검색·온보딩 자료", "color": "#ffd54f"},
+     "text": "지식 관리", "sub": "기술 문서·위키·검색·온보딩 자료",
+     "examples": "예: AI로 사내 위키 검색·요약, 문서 자동 갱신, 신규 입사자 가이드 생성",
+     "color": "#ffd54f"},
     {"id": "A6", "part": "A-1", "section": "Context Engineering", "type": "pattern",
-     "text": "데이터 수집·분석", "sub": "지표 해석·트렌드 탐지·의사결정 지원", "color": "#ffd54f"},
+     "text": "데이터 수집·분석", "sub": "지표 해석·트렌드 탐지·의사결정 지원",
+     "examples": "예: AI가 대시보드 데이터 요약, 이상 징후 탐지·알림, 지표 해석 보고서 생성",
+     "color": "#ffd54f"},
     # Part A-2: Core Work (3문항)
     {"id": "A7", "part": "A-2", "section": "Core Work", "type": "pattern",
-     "text": "본업 산출물 생산", "sub": "코드/기획서/시안/보고서/논문", "color": "#4fc3f7"},
+     "text": "본업 산출물 생산", "sub": "코드/기획서/시안/보고서/논문",
+     "examples": "예: Copilot으로 코드 작성, AI로 기획서 초안, Midjourney로 시안 탐색, AI로 분석 보고서",
+     "color": "#4fc3f7"},
     {"id": "A8", "part": "A-2", "section": "Core Work", "type": "pattern",
-     "text": "본업 품질 검증·리뷰", "sub": "코드리뷰/정합성체크/UI검증/결과검증", "color": "#4fc3f7"},
+     "text": "본업 품질 검증·리뷰", "sub": "코드리뷰/정합성체크/UI검증/결과검증",
+     "examples": "예: AI 코드리뷰, 기획서 엣지케이스 체크, 디자인 접근성 검증, 분석 결과 교차 검증",
+     "color": "#4fc3f7"},
     {"id": "A9", "part": "A-2", "section": "Core Work", "type": "pattern",
-     "text": "우선순위·의사결정", "sub": "백로그순위/로드맵/방향성 판단", "color": "#4fc3f7"},
+     "text": "우선순위·의사결정", "sub": "백로그순위/로드맵/방향성 판단",
+     "examples": "예: AI가 백로그 우선순위 제안, 데이터 기반 Go/No-Go 분석, 기술부채 vs 신규기능 판단 지원",
+     "color": "#4fc3f7"},
     # Part B: AI 활용 행동 (8문항)
     {"id": "B1", "part": "B", "section": "CE 행동", "type": "likert", "color": "#ffd54f",
      "text": "업무에 필요한 정보를 AI로 수집·정리한다"},
@@ -284,7 +399,7 @@ async def home(request: Request):
 
 @app.get("/login")
 async def login(request: Request):
-    if DEV_MODE:
+    if DEV_MODE and not GOOGLE_CLIENT_ID:
         request.session["user"] = {"name": "Dev User", "email": "dev@test.com", "nickname": "테스터"}
         return RedirectResponse(url="/")
     state = secrets.token_urlsafe(32)
@@ -332,6 +447,12 @@ async def logout(request: Request):
     return RedirectResponse(url="/")
 
 
+@app.get("/guest")
+async def guest(request: Request):
+    request.session["user"] = {"name": "Guest", "email": "", "nickname": "게스트"}
+    return RedirectResponse(url="/survey")
+
+
 @app.get("/survey", response_class=HTMLResponse)
 async def survey(request: Request):
     user = request.session.get("user")
@@ -364,11 +485,17 @@ async def submit(request: Request):
     results = calculate_results(form_data)
     results["nickname"] = user.get("nickname", "")
     results["role"] = form_data.get("role", "구성원")
-    results["job"] = form_data.get("job", "")
     results["org_size"] = form_data.get("org_size", "")
     results["ai_duration"] = form_data.get("ai_duration", "")
     results["raw"] = form_data
     results["surveyed_at"] = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
+
+    # Google Sheets 저장 (SA 키가 있을 때만)
+    try:
+        save_to_sheets(results, form_data)
+    except Exception as e:
+        print(f"[Sheets] save failed: {e}")
+
     request.session["results"] = results
     return RedirectResponse(url="/result", status_code=303)
 

@@ -42,8 +42,8 @@
   }
   .slide {
     position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: 80px 24px 40px;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 60px 24px 40px;
     opacity: 0; transform: translateY(30px);
     transition: all 0.35s ease;
     pointer-events: none;
@@ -116,9 +116,9 @@
     font-size: 11px; color: #9ca3af; margin-top: 4px;
   }
 
-  /* ── Agency follow-up ── */
+  /* ── Agency concept map ── */
   .agency-section {
-    margin-top: 24px; padding-top: 24px; border-top: 1px solid #e8e6e3;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid #e8e6e3;
     opacity: 0; max-height: 0; overflow: hidden;
     transition: all 0.3s ease;
   }
@@ -126,9 +126,44 @@
     opacity: 1; max-height: 400px;
   }
   .agency-label {
-    font-size: 14px; font-weight: 600; color: #6366f1;
-    margin-bottom: 12px;
+    font-size: 14px; color: #374151; text-align: center;
+    margin-bottom: 12px; font-weight: 500;
   }
+  .cmap {
+    position: relative; width: 280px; height: 220px; margin: 0 auto;
+  }
+  .cmap-center {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #f0f0ff; border: 2px solid #6366f1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; z-index: 2;
+  }
+  .cmap-line {
+    position: absolute; background: #e5e3e0; z-index: 0;
+  }
+  .cmap-line-v { width: 2px; height: 50px; left: 50%; transform: translateX(-50%); }
+  .cmap-line-h { height: 2px; width: 60px; top: 50%; transform: translateY(-50%); }
+  .cmap-line.top { top: 18px; }
+  .cmap-line.bottom { bottom: 18px; }
+  .cmap-line.left { left: 30px; }
+  .cmap-line.right { right: 30px; }
+  .cmap-node {
+    position: absolute; padding: 8px 14px;
+    background: #fff; border: 1.5px solid #e5e3e0; border-radius: 10px;
+    cursor: pointer; transition: all 0.15s;
+    text-align: center; z-index: 1; white-space: nowrap;
+  }
+  .cmap-node:hover { border-color: #c7c5c2; background: #fefefe; }
+  .cmap-node.selected { border-color: #6366f1; background: #f0f0ff; }
+  .cmap-node.selected .cn-label { color: #6366f1; }
+  .cmap-node .cn-emoji { font-size: 18px; display: block; margin-bottom: 2px; }
+  .cmap-node .cn-label { font-size: 11px; color: #6b7280; font-weight: 500; }
+  .cmap-node.selected .cn-label { font-weight: 600; }
+  .cmap-node.n-top { top: 0; left: 50%; transform: translateX(-50%); }
+  .cmap-node.n-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .cmap-node.n-left { left: 0; top: 50%; transform: translateY(-50%); }
+  .cmap-node.n-right { right: 0; top: 50%; transform: translateY(-50%); }
 
   /* ── Text input ── */
   .text-input {
@@ -142,25 +177,35 @@
   .text-input::placeholder { color: #c7c5c2; }
 
   /* ── Info form ── */
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .info-grid { display: flex; flex-direction: column; gap: 24px; }
   .info-field label {
-    display: block; font-size: 14px; font-weight: 500;
-    color: #6b7280; margin-bottom: 6px;
+    display: block; font-size: 14px; font-weight: 600;
+    color: #374151; margin-bottom: 10px;
   }
-  .info-field select, .info-field input[type="text"] {
+  .info-field input[type="text"] {
     width: 100%; padding: 12px 16px;
     background: #fff; color: #1a1a1a;
     border: 1.5px solid #e5e3e0; border-radius: 10px;
     font-size: 15px; font-family: inherit;
-    transition: border-color 0.15s;
-    appearance: auto;
   }
-  .info-field select:focus, .info-field input:focus {
-    outline: none; border-color: #6366f1;
+  .info-field input:focus { outline: none; border-color: #6366f1; }
+  .role-hint { font-size: 12px; color: #6366f1; margin-top: 6px; }
+
+  /* Segmented buttons */
+  .seg-group {
+    display: flex; gap: 0; border: 1.5px solid #e5e3e0; border-radius: 10px; overflow: hidden;
   }
-  .role-hint {
-    font-size: 12px; color: #6366f1; margin-top: 2px;
+  .seg-btn {
+    flex: 1; padding: 12px 8px; text-align: center;
+    background: #fff; cursor: pointer; transition: all 0.15s;
+    font-size: 14px; font-weight: 500; color: #6b7280;
+    border-right: 1px solid #e5e3e0;
+    font-family: inherit;
   }
+  .seg-btn:last-child { border-right: none; }
+  .seg-btn:hover { background: #faf9f7; }
+  .seg-btn.selected { background: #6366f1; color: #fff; }
+  .seg-btn input { display: none; }
 
   /* ── Buttons ── */
   .next-btn {
@@ -200,7 +245,7 @@
 
 <!-- Progress -->
 <div class="progress"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
-<div class="progress-info" id="progressInfo"></div>
+<div class="progress-info"><span id="roleBadge" style="display:none; background:#f0f0ff; color:#6366f1; font-weight:600; padding:2px 10px; border-radius:12px; font-size:11px; margin-right:8px;"></span><span id="progressCount"></span></div>
 <button class="back-btn" id="backBtn" onclick="prevSlide()" style="display:none;">← 이전</button>
 
 <form id="surveyForm" action="/submit" method="post">
@@ -227,52 +272,36 @@
     <div class="slide-inner">
       <p class="q-part">응답자 정보</p>
       <p class="q-text">기본 정보를 알려주세요</p>
-      <p class="q-sub">주체 방향 선택지가 역할에 따라 달라집니다.</p>
       <div class="info-grid">
         <div class="info-field">
           <label>닉네임</label>
-          <input type="text" name="nickname" value="{{ user.nickname if user else '테스터' }}" readonly>
-        </div>
-        <div class="info-field">
-          <label>조직 규모</label>
-          <select name="org_size" required>
-            <option value="">선택해주세요</option>
-            <option value="~10명">~10명</option>
-            <option value="11~30명">11~30명</option>
-            <option value="31~50명">31~50명</option>
-            <option value="50명+">50명+</option>
-          </select>
+          <input type="text" name="nickname" value="{{ user.nickname if user else '' }}" placeholder="닉네임을 입력해주세요" {% if user and user.email %}readonly{% endif %}>
         </div>
         <div class="info-field">
           <label>역할</label>
-          <select name="role" id="roleSelect" required onchange="window._role=this.value">
-            <option value="">선택해주세요</option>
-            <option value="리더">리더</option>
-            <option value="구성원">구성원</option>
-          </select>
-          <p class="role-hint">리더/구성원에 따라 주체 방향이 달라집니다</p>
+          <div class="seg-group" id="seg-role">
+            <div class="seg-btn" onclick="pickSeg('role','리더',this)">리더<input type="radio" name="role" value="리더"></div>
+            <div class="seg-btn" onclick="pickSeg('role','구성원',this)">구성원<input type="radio" name="role" value="구성원"></div>
+          </div>
+          <p class="role-hint">역할에 따라 주체 방향 선택지가 달라집니다</p>
         </div>
         <div class="info-field">
-          <label>직무</label>
-          <select name="job" required>
-            <option value="">선택해주세요</option>
-            <option value="개발">개발</option>
-            <option value="기획">기획</option>
-            <option value="디자인">디자인</option>
-            <option value="데이터분석">데이터분석</option>
-            <option value="연구">연구</option>
-            <option value="기타">기타</option>
-          </select>
+          <label>조직 규모</label>
+          <div class="seg-group">
+            <div class="seg-btn" onclick="pickSeg('org_size','~10명',this)">~10명<input type="radio" name="org_size" value="~10명"></div>
+            <div class="seg-btn" onclick="pickSeg('org_size','11~30명',this)">11~30명<input type="radio" name="org_size" value="11~30명"></div>
+            <div class="seg-btn" onclick="pickSeg('org_size','31~50명',this)">31~50명<input type="radio" name="org_size" value="31~50명"></div>
+            <div class="seg-btn" onclick="pickSeg('org_size','50명+',this)">50명+<input type="radio" name="org_size" value="50명+"></div>
+          </div>
         </div>
-        <div class="info-field" style="grid-column:span 2;">
+        <div class="info-field">
           <label>AI 도구 사용 기간</label>
-          <select name="ai_duration" required>
-            <option value="">선택해주세요</option>
-            <option value="미사용">미사용</option>
-            <option value="~3개월">~3개월</option>
-            <option value="3~12개월">3~12개월</option>
-            <option value="1년+">1년+</option>
-          </select>
+          <div class="seg-group">
+            <div class="seg-btn" onclick="pickSeg('ai_duration','미사용',this)">미사용<input type="radio" name="ai_duration" value="미사용"></div>
+            <div class="seg-btn" onclick="pickSeg('ai_duration','~3개월',this)">~3개월<input type="radio" name="ai_duration" value="~3개월"></div>
+            <div class="seg-btn" onclick="pickSeg('ai_duration','3~12개월',this)">3~12개월<input type="radio" name="ai_duration" value="3~12개월"></div>
+            <div class="seg-btn" onclick="pickSeg('ai_duration','1년+',this)">1년+<input type="radio" name="ai_duration" value="1년+"></div>
+          </div>
         </div>
       </div>
       <button type="button" class="next-btn" onclick="nextSlide()">
@@ -309,6 +338,18 @@ const AGENCY_LEADER = {{ agency_leader | tojson }};
 
 window._role = '';
 
+function pickSeg(name, val, el) {
+  el.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+  if (name === 'role') {
+    window._role = val;
+    const badge = document.getElementById('roleBadge');
+    badge.textContent = val;
+    badge.style.display = 'inline';
+  }
+}
+
 // ── Build question slides ──
 const slidesContainer = document.getElementById('slides');
 const lastSlide = slidesContainer.querySelector('[data-idx="last"]');
@@ -327,6 +368,7 @@ QUESTIONS.forEach((q, i) => {
   if (q.sub) inner += `<p class="q-sub">${q.sub}</p>`;
 
   if (q.type === 'pattern') {
+    if (q.examples) inner += `<p style="font-size:13px; color:#9ca3af; margin-bottom:16px; line-height:1.6; padding:10px 14px; background:#f5f5f0; border-radius:8px;">${q.examples}</p>`;
     inner += `<div class="choices" id="choices-${q.id}">`;
     PATTERN_OPTIONS.forEach((opt, j) => {
       inner += `<div class="choice" onclick="pickPattern('${q.id}','${opt.value}',this)">
@@ -337,10 +379,10 @@ QUESTIONS.forEach((q, i) => {
     inner += `</div>`;
     inner += `<input type="hidden" name="${q.id}" id="input-${q.id}">`;
 
-    // Agency section
+    // Agency concept map
     inner += `<div class="agency-section" id="agency-${q.id}">`;
-    inner += `<p class="agency-label">이 AI 활용은 누구의 주도로 이루어지나요?</p>`;
-    inner += `<div class="choices" id="agency-choices-${q.id}"></div>`;
+    inner += `<p class="agency-label">이 AI 활용은 어디서 시작됐나요?</p>`;
+    inner += `<div class="cmap" id="agency-choices-${q.id}"></div>`;
     inner += `<input type="hidden" name="${q.id}_agency" id="input-${q.id}_agency">`;
     inner += `</div>`;
 
@@ -388,10 +430,10 @@ function showSlide(idx) {
   document.getElementById('progressFill').style.width = pct + '%';
 
   // Info text
-  const info = document.getElementById('progressInfo');
-  if (idx === 0) info.textContent = '';
-  else if (idx >= totalSlides - 1) info.textContent = '완료!';
-  else info.textContent = `${idx} / ${totalSlides - 2}`;
+  const countEl = document.getElementById('progressCount');
+  if (idx === 0) countEl.textContent = '';
+  else if (idx >= totalSlides - 1) countEl.textContent = '완료!';
+  else countEl.textContent = `${idx} / ${totalSlides - 2}`;
 
   // Back button
   document.getElementById('backBtn').style.display = idx > 0 ? 'block' : 'none';
@@ -425,22 +467,55 @@ function pickPattern(qid, val, el) {
   }
 }
 
+const AGENCY_NODES = {
+  '리더': {
+    top:    { value: 'c', emoji: '🏢', label: '상위 조직' },
+    bottom: { value: 'a', emoji: '🙋', label: '개인 활용' },
+    left:   { value: 'd', emoji: '🤝', label: '관련 팀' },
+    right:  { value: 'b', emoji: '👥', label: '내가 팀에' },
+  },
+  '구성원': {
+    top:    { value: 'c', emoji: '🏢', label: '상위 조직' },
+    bottom: { value: 'a', emoji: '🙋', label: '개인 활용' },
+    left:   { value: 'd', emoji: '🤝', label: '관련 팀' },
+    right:  { value: 'b', emoji: '👥', label: '리더·동료' },
+  },
+};
+
 function renderAgency(qid) {
-  const opts = window._role === '리더' ? AGENCY_LEADER : AGENCY_MEMBER;
+  const role = window._role || '구성원';
+  const nodes = AGENCY_NODES[role] || AGENCY_NODES['구성원'];
   const container = document.getElementById(`agency-choices-${qid}`);
-  container.innerHTML = opts.map((o, i) =>
-    `<div class="choice" onclick="pickAgency('${qid}','${o.value}',this)">
-      <span class="choice-key">${String.fromCharCode(65+i)}</span>
-      <span>${o.label}</span>
-    </div>`
-  ).join('');
+  container.innerHTML = `
+    <div class="cmap-line cmap-line-v top"></div>
+    <div class="cmap-line cmap-line-v bottom"></div>
+    <div class="cmap-line cmap-line-h left"></div>
+    <div class="cmap-line cmap-line-h right"></div>
+    <div class="cmap-center">🧑</div>
+    <div class="cmap-node n-top" onclick="pickAgency('${qid}','${nodes.top.value}',this)">
+      <span class="cn-emoji">${nodes.top.emoji}</span>
+      <span class="cn-label">${nodes.top.label}</span>
+    </div>
+    <div class="cmap-node n-bottom" onclick="pickAgency('${qid}','${nodes.bottom.value}',this)">
+      <span class="cn-emoji">${nodes.bottom.emoji}</span>
+      <span class="cn-label">${nodes.bottom.label}</span>
+    </div>
+    <div class="cmap-node n-left" onclick="pickAgency('${qid}','${nodes.left.value}',this)">
+      <span class="cn-emoji">${nodes.left.emoji}</span>
+      <span class="cn-label">${nodes.left.label}</span>
+    </div>
+    <div class="cmap-node n-right" onclick="pickAgency('${qid}','${nodes.right.value}',this)">
+      <span class="cn-emoji">${nodes.right.emoji}</span>
+      <span class="cn-label">${nodes.right.label}</span>
+    </div>
+  `;
 }
 
 function pickAgency(qid, val, el) {
-  el.parentElement.querySelectorAll('.choice').forEach(c => c.classList.remove('selected'));
+  el.parentElement.querySelectorAll('.cmap-node').forEach(n => n.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById(`input-${qid}_agency`).value = val;
-  setTimeout(nextSlide, 350);
+  setTimeout(nextSlide, 400);
 }
 
 function pickLikert(qid, val, el) {
