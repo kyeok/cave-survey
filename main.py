@@ -223,7 +223,7 @@ QUESTIONS = [
     {"id": "B4", "part": "B", "section": "CE 행동", "type": "likert", "color": "#ffd54f",
      "text": "AI에게 더 나은 결과를 얻기 위해 프롬프트·맥락을 의도적으로 설계한다"},
     {"id": "B5", "part": "B", "section": "CW 행동", "type": "likert", "color": "#4fc3f7",
-     "text": "AI가 만든 결과물을 수정 없이 그대로 사용한 적이 있다"},
+     "text": "AI 결과물의 품질이 충분하여 수정 없이 활용한 경험이 있다"},
     {"id": "B6", "part": "B", "section": "CW 행동", "type": "likert", "color": "#4fc3f7",
      "text": "AI 결과물이 틀렸을 때 직접 발견해서 고친 경험이 있다"},
     {"id": "B7", "part": "B", "section": "CW 행동", "type": "likert", "color": "#4fc3f7",
@@ -232,23 +232,23 @@ QUESTIONS = [
      "text": "AI 없이는 처리하기 어려웠을 본업 작업을 AI 덕분에 수행한다"},
     # Part C: 자율성 (12문항)
     {"id": "C1", "part": "C", "section": "의사결정 자율성", "type": "likert", "color": "#00D4FF",
-     "text": "나는 업무 관련 결정을 스스로 내릴 수 있다"},
+     "text": "나는 업무 수행 방식에 대한 결정을 독립적으로 내릴 수 있다"},
     {"id": "C2", "part": "C", "section": "의사결정 자율성", "type": "likert", "color": "#00D4FF",
-     "text": "목표 달성 방법을 자율적으로 판단한다"},
+     "text": "목표를 달성하기 위한 방법과 절차를 내가 판단하여 정한다"},
     {"id": "C3", "part": "C", "section": "의사결정 자율성", "type": "likert", "color": "#00D4FF",
-     "text": "관리자 승인 없이 일상 업무를 결정한다"},
+     "text": "일상적인 업무 판단을 상급자 승인 없이 진행한다"},
     {"id": "C4", "part": "C", "section": "업무방식 자율성", "type": "likert", "color": "#00E676",
-     "text": "업무 수행 방식을 내가 선택한다"},
+     "text": "업무를 수행할 때 어떤 방식으로 할지 내가 선택한다"},
     {"id": "C5", "part": "C", "section": "업무방식 자율성", "type": "likert", "color": "#00E676",
-     "text": "사용할 도구/절차를 스스로 정한다"},
+     "text": "어떤 도구와 절차를 사용할지 스스로 결정한다"},
     {"id": "C6", "part": "C", "section": "업무방식 자율성", "type": "likert", "color": "#00E676",
-     "text": "기존 절차를 개선하거나 변경할 자유가 있다"},
+     "text": "기존 절차가 비효율적이면 내가 판단하여 변경할 수 있다"},
     {"id": "C7", "part": "C", "section": "일정 자율성", "type": "likert", "color": "#00E676",
-     "text": "업무 순서를 스스로 정한다"},
+     "text": "오늘 어떤 업무를 먼저 할지 순서를 내가 결정한다"},
     {"id": "C8", "part": "C", "section": "일정 자율성", "type": "likert", "color": "#00E676",
-     "text": "시간 배분을 자유롭게 조절한다"},
+     "text": "하루 중 업무 시간 배분을 자유롭게 조절할 수 있다"},
     {"id": "C9", "part": "C", "section": "일정 자율성", "type": "likert", "color": "#00E676",
-     "text": "업무 일정을 주도적으로 계획한다"},
+     "text": "이번 주 일정을 내가 주도적으로 계획하고 운영한다"},
     {"id": "C10", "part": "C", "section": "AI 기여 자율성", "type": "likert", "color": "#ab47bc",
      "text": "AI 도입 이후, 이전보다 더 많은 결정을 스스로 내리게 되었다"},
     {"id": "C11", "part": "C", "section": "AI 기여 자율성", "type": "likert", "color": "#ab47bc",
@@ -259,7 +259,7 @@ QUESTIONS = [
     {"id": "D1", "part": "D", "section": "정보 투명성", "type": "likert", "color": "#66bb6a",
      "text": "업무에 필요한 맥락 정보(배경·목적·근거)를 나는 충분히 얻을 수 있다"},
     {"id": "D2", "part": "D", "section": "정보 투명성", "type": "likert", "color": "#66bb6a",
-     "text": "이전에는 접근하기 어려웠던 정보에 지금은 접근할 수 있다"},
+     "text": "AI를 통해 이전에는 접근하기 어려웠던 정보에 접근할 수 있게 되었다"},
     {"id": "D3", "part": "D", "section": "정보 투명성", "type": "likert", "color": "#66bb6a",
      "text": "AI가 정리한 정보를 보고 스스로 판단을 내린 경험이 있다"},
     {"id": "D4", "part": "D", "section": "AI 인식", "type": "likert", "color": "#FFD700",
@@ -276,13 +276,17 @@ QUESTIONS = [
      "text": "AI에게 맡겨도 될 일인데 내가 직접 하게 되는 일이 있다"},
     {"id": "D10", "part": "D", "section": "위임 전환", "type": "likert", "color": "#78909c",
      "text": "AI에게 맡기면서 내가 직접 하는 일이 줄었다"},
+    {"id": "D11", "part": "D", "section": "심리적 안전감", "type": "likert", "color": "#7c3aed",
+     "text": "AI 사용에 대해 팀 내에서 자유롭게 의견을 나눌 수 있다"},
+    {"id": "D12", "part": "D", "section": "심리적 안전감", "type": "likert", "color": "#7c3aed",
+     "text": "AI 활용 중 실수하거나 잘못된 결과가 나와도 비난받지 않는다"},
     # Part E: 주관식 (3문항)
     {"id": "E1", "part": "E", "section": "주관식", "type": "text", "color": "#78909c",
      "text": "최근 1개월 이내에 AI 때문에 업무 방식이 달라진 구체적 경험이 있다면 적어주세요."},
     {"id": "E2", "part": "E", "section": "주관식", "type": "text", "color": "#78909c",
      "text": "AI 도입 전과 비교해서 리더(관리자)의 역할에서 가장 크게 변한 점은?"},
     {"id": "E3", "part": "E", "section": "주관식", "type": "text", "color": "#78909c",
-     "text": "AI가 정보를 더 잘 정리해줌으로써 스스로 판단할 수 있게 된 사례, 또는 자율성이 줄어든 사례가 있다면 적어주세요."},
+     "text": "AI가 정보를 잘 정리해줘서 스스로 판단할 수 있게 된 사례, 또는 AI가 틀렸거나 부족했을 때 어떻게 대응했는지 적어주세요."},
 ]
 
 PARTS = [
@@ -366,6 +370,8 @@ def calculate_results(form_data: dict) -> dict:
     surveillance = safe_mean([likert(f"D{i}") for i in range(6, 9)])
     d6, d7, d8 = likert("D6"), likert("D7"), likert("D8")
     d9, d10 = likert("D9"), likert("D10")
+    d11, d12 = likert("D11"), likert("D12")
+    psych_safety = safe_mean([d11, d12])
 
     return {
         "a_scores": a_scores,
@@ -379,6 +385,7 @@ def calculate_results(form_data: dict) -> dict:
         "surveillance": {"overall": surveillance, "visibility": d6, "eval_concern": d7, "restraint": d8},
         "ai_awareness": {"autonomy_felt": d4, "ai_understanding": d5},
         "delegation": {"hurdle": d9, "effect": d10},
+        "psych_safety": {"overall": psych_safety, "openness": d11, "no_blame": d12},
         "open_ended": {
             "E1": form_data.get("E1", ""),
             "E2": form_data.get("E2", ""),

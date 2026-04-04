@@ -165,8 +165,7 @@
     <p style="font-size:12px; color:#9ca3af; margin-bottom:4px;">{{ now }} 측정</p>
     <p class="hero-label">{{r.nickname}}님의 조직 AI Ops Pattern</p>
     <div class="hero-pattern">P{{r.overall.level if r.overall.level is not none else '?'}}</div>
-    <div class="hero-name">{{r.overall.name}}</div>
-    <div class="hero-avg">종합 평균 {{r.overall.avg if r.overall.avg is not none else 'N/A'}}</div>
+    <div class="hero-name">{{r.overall.name}} (평균 {{r.overall.avg if r.overall.avg is not none else 'N/A'}})</div>
 
     <div class="hero-pips">
       {% for i in range(5) %}
@@ -178,11 +177,11 @@
     <div class="hero-sub">
       <div class="hero-sub-item">
         <div class="hero-sub-val c-amber">P{{r.ce.level if r.ce.level is not none else '?'}}</div>
-        <div class="hero-sub-label">Context Engineering</div>
+        <div class="hero-sub-label">CE ({{r.ce.avg if r.ce.avg is not none else '-'}})</div>
       </div>
       <div class="hero-sub-item">
         <div class="hero-sub-val c-cyan">P{{r.cw.level if r.cw.level is not none else '?'}}</div>
-        <div class="hero-sub-label">Core Work</div>
+        <div class="hero-sub-label">CW ({{r.cw.avg if r.cw.avg is not none else '-'}})</div>
       </div>
     </div>
   </div>
@@ -272,6 +271,28 @@
         <div class="stat {% if r.surveillance.restraint and r.surveillance.restraint >= 4 %}stat-warn{% endif %}">
           <div class="stat-val" style="font-size:18px;">{{r.surveillance.restraint or '-'}}</div>
           <div class="stat-label">행동 위축</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 심리적 안전감 ===== -->
+  <div class="section">
+    <p class="section-label">Part D</p>
+    <h2 class="section-title">심리적 안전감</h2>
+    <div class="card">
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-val" style="color:#7c3aed;">{{r.psych_safety.overall or '-'}}</div>
+          <div class="stat-label">종합</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" style="font-size:18px; color:#7c3aed;">{{r.psych_safety.openness or '-'}}</div>
+          <div class="stat-label">의견 개진</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" style="font-size:18px; color:#7c3aed;">{{r.psych_safety.no_blame or '-'}}</div>
+          <div class="stat-label">실수 허용</div>
         </div>
       </div>
     </div>
