@@ -1,0 +1,105 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "🔬 CAVE Survey" [ref=e3] [cursor=pointer]:
+      - /url: /
+    - generic [ref=e4]:
+      - link "AI Ops Pattern이란?" [ref=e5] [cursor=pointer]:
+        - /url: /guide
+      - link "커버리지 맵" [ref=e6] [cursor=pointer]:
+        - /url: /docs/coverage-map
+      - link "로그인" [ref=e7] [cursor=pointer]:
+        - /url: /login
+  - generic [ref=e8]:
+    - generic [ref=e9]: 🔬
+    - heading "CAVE Survey" [level=1] [ref=e10]
+    - paragraph [ref=e11]:
+      - text: AI Ops는 조직의 자율성을 강화하는가?
+      - text: 42문항 · 3축 구조 · 약 15분
+    - link "Google 로그인" [ref=e12] [cursor=pointer]:
+      - /url: /login
+      - img [ref=e13]
+      - text: Google 로그인
+    - paragraph [ref=e18]: Google 로그인으로 응답자를 자동 식별합니다
+    - link "게스트로 체험하기" [ref=e20] [cursor=pointer]:
+      - /url: /guest
+    - paragraph [ref=e21]: 로그인 없이 바로 설문을 시작합니다
+  - generic [ref=e22]:
+    - paragraph [ref=e23]: 이렇게 진행됩니다
+    - generic [ref=e24]:
+      - generic [ref=e29]: daolab7-cave.up.railway.app/survey
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - paragraph [ref=e34]: Part A-1 · Context Engineering
+          - paragraph [ref=e35]: 회의록·기록
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - generic [ref=e38]: P0
+              - text: AI 미사용
+            - generic [ref=e39]:
+              - generic [ref=e40]: P1
+              - text: AI 보조
+            - generic [ref=e41]:
+              - generic [ref=e42]: P2
+              - text: AI 협업 — AI가 초안, 사람이 검토
+            - generic [ref=e43]:
+              - generic [ref=e44]: P3
+              - text: AI 위임
+        - generic [ref=e45]:
+          - paragraph [ref=e48]: 주체 방향
+          - paragraph [ref=e49]: 이 AI 활용은 어디서 시작됐나요?
+          - generic [ref=e50]:
+            - generic [ref=e55]: 🧑
+            - generic [ref=e56]:
+              - text: 🏢
+              - text: 상위 조직
+            - generic [ref=e57]:
+              - text: 🙋
+              - text: 개인 활용
+            - generic [ref=e58]:
+              - text: 🤝
+              - text: 관련 팀
+            - generic [ref=e59]:
+              - text: 👥
+              - text: 리더·동료
+        - generic [ref=e60]:
+          - paragraph [ref=e63]: Part C · 자율성
+          - paragraph [ref=e64]: 업무 수행 방식을 내가 선택한다
+          - generic [ref=e65]:
+            - generic [ref=e66]: "1"
+            - generic [ref=e67]: "2"
+            - generic [ref=e68]: "3"
+            - generic [ref=e69]: "4"
+            - generic [ref=e70]: "5"
+          - generic [ref=e71]:
+            - generic [ref=e72]: 전혀 아니다
+            - generic [ref=e73]: 매우 그렇다
+        - generic [ref=e74]:
+          - paragraph [ref=e77]: Part D · 감시 체감
+          - paragraph [ref=e78]:
+            - text: AI가 업무를 추적하면서
+            - text: 내 일이 더 들여다보여지는 느낌이 든다
+          - generic [ref=e79]:
+            - generic [ref=e80]: "1"
+            - generic [ref=e81]: "2"
+            - generic [ref=e82]: "3"
+            - generic [ref=e83]: "4"
+            - generic [ref=e84]: "5"
+          - generic [ref=e85]:
+            - generic [ref=e86]: 전혀 아니다
+            - generic [ref=e87]: 매우 그렇다
+        - generic [ref=e89]:
+          - generic [ref=e90]: P2
+          - generic [ref=e91]: AI 협업
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - text: P2
+              - generic [ref=e94]: CE
+            - generic [ref=e95]:
+              - text: P1
+              - generic [ref=e96]: CW
+  - generic [ref=e106]:
+    - paragraph [ref=e107]: 이 설문은 무엇인가요?
+    - paragraph [ref=e108]:
+      - text: CAVE 연구의 공통 설문 42문항입니다.
+      - text: Context Engineering · Core Work · Agency Direction 3축으로
+      - text: 조직의 AI Ops Pattern(P0~P4)을 진단합니다.

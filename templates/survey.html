@@ -227,6 +227,19 @@
   }
   .skip-btn:hover { color: #6b7280; }
 
+  /* ── Validation shake ── */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  .shake { animation: shake 0.4s ease; }
+  .validation-hint {
+    color: #ef4444; font-size: 13px; margin-top: 12px;
+    text-align: center; opacity: 0; transition: opacity 0.3s;
+  }
+  .validation-hint.show { opacity: 1; }
+
   /* ── Intro/Outro ── */
   .intro-icon { font-size: 48px; margin-bottom: 16px; }
   .intro-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
@@ -423,7 +436,71 @@ function showSlide(idx) {
   document.getElementById('backBtn').style.display = idx > 0 ? 'block' : 'none';
 }
 
+function validateCurrentSlide() {
+  const slide = document.querySelector(`.slide[data-idx="${current}"]`);
+  if (!slide) return true;
+
+  const qid = slide.dataset.qid;
+  const qtype = slide.dataset.type;
+
+  // 인트로(0) 슬라이드는 검증 불필요
+  if (!qid && current === 0) return true;
+
+  // 데모 슬라이드 (역할·조직규모·AI사용기간)
+  if (!qid && current === 1) {
+    const role = document.querySelector('input[name="role"]:checked');
+    const org = document.querySelector('input[name="org_size"]:checked');
+    const ai = document.querySelector('input[name="ai_duration"]:checked');
+    if (!role || !org || !ai) return false;
+    return true;
+  }
+
+  // 주관식(text)은 건너뛰기 허용
+  if (qtype === 'text') return true;
+
+  // Pattern 문항: 패턴 선택 필수, na/0이 아니면 agency도 필수
+  if (qtype === 'pattern') {
+    const val = document.getElementById(`input-${qid}`)?.value;
+    if (!val) return false;
+    if (val !== 'na' && val !== '0') {
+      const agency = document.getElementById(`input-${qid}_agency`)?.value;
+      if (!agency) return false;
+    }
+    return true;
+  }
+
+  // Likert 문항: 선택 필수
+  if (qtype === 'likert') {
+    const val = document.getElementById(`input-${qid}`)?.value;
+    if (!val) return false;
+    return true;
+  }
+
+  return true;
+}
+
+function showValidationHint(slide) {
+  let hint = slide.querySelector('.validation-hint');
+  if (!hint) {
+    hint = document.createElement('p');
+    hint.className = 'validation-hint';
+    hint.textContent = '응답을 선택해주세요';
+    slide.querySelector('.slide-inner').appendChild(hint);
+  }
+  hint.classList.add('show');
+  slide.querySelector('.slide-inner').classList.add('shake');
+  setTimeout(() => {
+    hint.classList.remove('show');
+    slide.querySelector('.slide-inner').classList.remove('shake');
+  }, 1500);
+}
+
 function nextSlide() {
+  if (!validateCurrentSlide()) {
+    const slide = document.querySelector(`.slide[data-idx="${current}"]`);
+    if (slide) showValidationHint(slide);
+    return;
+  }
   if (current + 1 >= totalSlides) {
     document.getElementById('surveyForm').submit();
   } else {

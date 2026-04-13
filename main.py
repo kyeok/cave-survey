@@ -527,6 +527,13 @@ async def guide(request: Request):
     return templates.TemplateResponse("guide.html", {"request": request, "user": user})
 
 
+@app.get("/docs/phase1-analysis", response_class=HTMLResponse)
+async def phase1_analysis():
+    import pathlib
+    html = pathlib.Path("docs/phase1-analysis.html").read_text(encoding="utf-8")
+    return HTMLResponse(content=html)
+
+
 @app.get("/docs/coverage-map", response_class=HTMLResponse)
 async def coverage_map(request: Request):
     user = request.session.get("user")
